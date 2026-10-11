@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Tingo Pay - Tải App & Tạo Tài Khoản</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome 6.4.0 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tingo: {
+              orange: '#FF6600',
+              'orange-dark': '#D94800',
+              navy: '#1A365D',
+              blue: '#0038A8',
+              deep: '#00226E',
+              link: '#007aff',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Khóa cuộn trang tuyệt đối để luôn vừa vặn 1 màn hình (Zero-Scroll) */
+    html, body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b1120;
+      margin: 0;
+      padding: 0;
+      color: #1e293b;
+      height: 100dvh;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+    }
+
+    /* Hiệu ứng nhấp nháy phát sáng cam đậm (#D94800) làm nổi bật */
+    @keyframes pulse-ring {
+      0% {
+        box-shadow: 0 0 0 0 rgba(217, 72, 0, 0.8), 0 4px 14px rgba(255, 102, 0, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 11px rgba(217, 72, 0, 0), 0 4px 14px rgba(255, 102, 0, 0.4);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(217, 72, 0, 0), 0 4px 14px rgba(255, 102, 0, 0.4);
+      }
+    }
+
+    .guide-highlight {
+      border: 2.5px solid #D94800 !important;
+      animation: pulse-ring 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+      position: relative;
+    }
+
+    /* Tag nhãn chỉ dẫn nổi bật */
+    .guide-callout {
+      position: absolute;
+      background: linear-gradient(135deg, #FF6600, #D94800);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2.5px 9px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 3px 10px rgba(217, 72, 0, 0.5);
+      white-space: nowrap;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    /* Tùy biến dropdown chọn ngôn ngữ */
+    .custom-lang-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 0.6rem center;
+      background-size: 0.85em;
+      padding-right: 1.9rem;
+    }
+
+    .app-main::-webkit-scrollbar { display: none; }
+    .app-main { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* =================================================== */
+    /* CẤU TRÚC PHÂN CHIA CHẾ ĐỘ MOBILE & DESKTOP          */
+    /* =================================================== */
+    #mobile-view-root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    #desktop-view-root {
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .mobile-stage {
+      width: 430px;
+      height: 900px;
+      transform-origin: top center;
+      margin: 0 auto;
+      transition: transform 0.12s ease-out;
+      flex-shrink: 0;
+    }
+
+    .desktop-stage-canvas {
+      width: 2350px;
+      height: 990px;
+      transform-origin: top center;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      margin-left: -1175px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 32px;
+    }
+
+    .phone-mockup-frame {
+      width: 430px;
+      height: 900px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body class="select-none">
+
+  <!-- =================================================================== -->
+  <!-- 1. GIAO DIỆN CHẾ ĐỘ ĐIỆN THOẠI (MOBILE VIEW - < 1024PX)            -->
+  <!-- =================================================================== -->
+  <div id="mobile-view-root" class="px-2 py-1">
+    
+    <!-- THANH TIẾN TRÌNH & NÚT ĐIỀU HƯỚNG PREVIOUS / NEXT MOBILE -->
+    <header id="mobile-control-bar" class="max-w-[430px] w-full mb-1.5 px-3 py-1.5 bg-slate-900/95 border border-slate-800 rounded-2xl shadow-xl flex items-center justify-between gap-2 shrink-0 z-50">
+      <button id="nav-btn-prev" onclick="navigateStep(-1)" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition active:scale-95 disabled:opacity-25 disabled:pointer-events-none shrink-0 border border-slate-700">
+        <i class="fa-solid fa-chevron-left text-xs"></i>
+      </button>
+
+      <div class="flex-1 min-w-0 flex flex-col items-center px-1">
+        <div class="w-full flex justify-between items-center text-[10px] font-semibold text-slate-300 mb-0.5">
+          <span id="step-indicator-text" class="truncate pr-1">Bước 1: Tải App Tingo Pay</span>
+          <span id="step-percentage-text" class="text-tingo-orange font-extrabold shrink-0">20%</span>
+        </div>
+        <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden p-[1px] border border-slate-700/60">
+          <div id="progress-bar-fill" class="h-full bg-gradient-to-r from-tingo-orange to-tingo-orange-dark rounded-full transition-all duration-300 w-1/5"></div>
+        </div>
+      </div>
+
+      <button id="nav-btn-next" onclick="navigateStep(1)" class="w-8 h-8 rounded-xl bg-tingo-orange hover:bg-tingo-orange-dark text-white flex items-center justify-center transition active:scale-95 shadow-md disabled:opacity-25 disabled:pointer-events-none shrink-0">
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </button>
+
+      <!-- Dropdown chuyển ngữ trên Mobile -->
+      <div class="relative shrink-0 flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-xl px-2 py-1">
+        <i class="fa-solid fa-globe text-sky-400 text-xs"></i>
+        <select onchange="setLanguage(this.value)" class="lang-select-elem bg-transparent text-white text-[11px] font-bold focus:outline-none cursor-pointer">
+          <option value="vi">VI</option>
+          <option value="en">EN</option>
+          <option value="cn">CN</option>
+          <option value="kr">KR</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- KHUNG ĐIỆN THOẠI MOBILE (ĐÃ ĐƯỢC CĂN TOP ITEMS-START CHUẨN) -->
+    <div id="screen-fit" class="w-full flex-1 flex justify-center items-start overflow-hidden relative">
+      <div id="screen-stage" class="mobile-stage bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative">
+        
+        <!-- Status bar iOS Mobile -->
+        <div class="pt-3 px-7 pb-2 flex justify-between items-center text-slate-900 bg-white z-30 shrink-0">
+          <span class="text-sm font-semibold tracking-tight">09:41</span>
+          <div class="w-24 h-4 bg-slate-900 rounded-full mx-auto"></div>
+          <div class="flex items-center space-x-1.5 text-xs">
+            <i class="fa-solid fa-signal text-[11px]"></i>
+            <i class="fa-solid fa-wifi text-[11px]"></i>
+            <div class="flex items-center space-x-0.5 ml-1">
+              <div class="w-5 h-2.5 border border-slate-900 rounded-xs p-[1px] flex items-center">
+                <div class="bg-emerald-500 h-full w-[98%] rounded-[1px]"></div>
+              </div>
+              <div class="w-0.5 h-1 bg-slate-900 rounded-r-xs"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vùng chứa các bước màn hình Mobile -->
+        <div id="mobile-step-container" class="flex-1 flex flex-col overflow-hidden relative">
+          <div id="m-step-1" class="step-card flex-1 flex flex-col overflow-hidden"></div>
+          <div id="m-step-2" class="step-card flex-1 flex flex-col overflow-hidden hidden"></div>
+          <div id="m-step-3" class="step-card flex-1 flex flex-col overflow-hidden hidden"></div>
+          <div id="m-step-4" class="step-card flex-1 flex flex-col overflow-hidden hidden"></div>
+          <div id="m-step-5" class="step-card flex-1 flex flex-col overflow-hidden hidden"></div>
+        </div>
+
+        <!-- Home Bar iPhone Mobile -->
+        <div class="bg-white pb-2 pt-1 flex justify-center z-20 shrink-0">
+          <div class="w-32 h-1 bg-slate-900 rounded-full"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- 2. GIAO DIỆN CHẾ ĐỘ MÁY TÍNH (PANORAMA DESKTOP VIEW - 5 BƯỚC)       -->
+  <!-- =================================================================== -->
+  <div id="desktop-view-root">
+    
+    <!-- HEADER BAR DESKTOP (CHỮ LỚN, CHỐNG TRÀN, ICON ĐỊA CẦU TOÀN CẦU) -->
+    <header id="desktop-header-bar" class="w-full min-h-[58px] py-2.5 px-8 flex justify-between items-center border-b border-slate-800 bg-slate-900/95 backdrop-blur z-50 shrink-0">
+      <div class="flex items-center space-x-4 min-w-0">
+        <img src="https://lh3.googleusercontent.com/d/1cE6RCe1tQq0QxXSbz0zLr9LvPgyrSS9x" alt="Tingo Pay" class="h-8 object-contain shrink-0" />
+        <span class="text-slate-600 font-bold text-lg shrink-0">|</span>
+        <h1 class="text-base xl:text-lg font-extrabold text-slate-100 tracking-wide truncate max-w-[48vw] xl:max-w-[58vw]" data-i18n="doc_title">
+          TẢI APP & TẠO TÀI KHOẢN TINGO PAY
+        </h1>
+      </div>
+
+      <!-- Khối chọn ngôn ngữ: Icon quả địa cầu trực quan thay chữ "Ngôn ngữ" -->
+      <div class="flex items-center space-x-3 shrink-0 ml-4">
+        <div class="flex items-center bg-slate-800/90 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-2xl px-3.5 py-2 shadow-sm transition">
+          <i class="fa-solid fa-globe text-sky-400 text-base mr-2.5 shrink-0"></i>
+          <select id="desktop-lang-select" onchange="setLanguage(this.value)" class="lang-select-elem custom-lang-select bg-transparent text-white text-xs xl:text-sm font-bold focus:outline-none cursor-pointer">
+            <option value="vi" class="bg-slate-900 text-white">Tiếng Việt (VI)</option>
+            <option value="en" class="bg-slate-900 text-white">English (EN)</option>
+            <option value="cn" class="bg-slate-900 text-white">简体中文 (CN)</option>
+            <option value="kr" class="bg-slate-900 text-white">한국어 (KR)</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sân khấu co giãn máy tính chứa cả 5 thiết bị -->
+    <div id="desktop-scale-container" class="w-full flex-1 relative overflow-hidden">
+      <div id="desktop-canvas" class="desktop-stage-canvas">
+        
+        <!-- Cột 1: Bước 1 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-3.5 px-5 py-2 rounded-full bg-slate-900/90 border border-slate-800 text-tingo-orange text-sm font-black shadow-lg flex items-center space-x-2.5">
+            <span class="w-5 h-5 rounded-full bg-tingo-orange text-white flex items-center justify-center text-[11px] shrink-0">1</span>
+            <span class="step-title-d-1 whitespace-nowrap">Bước 1: Tải App Tingo Pay</span>
+          </div>
+          <div id="d-device-1" class="phone-mockup-frame bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative"></div>
+        </div>
+
+        <!-- Cột 2: Bước 2 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-3.5 px-5 py-2 rounded-full bg-slate-900/90 border border-slate-800 text-sky-400 text-sm font-black shadow-lg flex items-center space-x-2.5">
+            <span class="w-5 h-5 rounded-full bg-sky-500 text-white flex items-center justify-center text-[11px] shrink-0">2</span>
+            <span class="step-title-d-2 whitespace-nowrap">Bước 2: Chọn đăng ký mới</span>
+          </div>
+          <div id="d-device-2" class="phone-mockup-frame bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative"></div>
+        </div>
+
+        <!-- Cột 3: Bước 3 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-3.5 px-5 py-2 rounded-full bg-slate-900/90 border border-slate-800 text-amber-400 text-sm font-black shadow-lg flex items-center space-x-2.5">
+            <span class="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[11px] shrink-0">3</span>
+            <span class="step-title-d-3 whitespace-nowrap">Bước 3: Nhập số điện thoại</span>
+          </div>
+          <div id="d-device-3" class="phone-mockup-frame bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative"></div>
+        </div>
+
+        <!-- Cột 4: Bước 4 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-3.5 px-5 py-2 rounded-full bg-slate-900/90 border border-slate-800 text-rose-400 text-sm font-black shadow-lg flex items-center space-x-2.5">
+            <span class="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[11px] shrink-0">4</span>
+            <span class="step-title-d-4 whitespace-nowrap">Bước 4: Thiết lập mật khẩu</span>
+          </div>
+          <div id="d-device-4" class="phone-mockup-frame bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative"></div>
+        </div>
+
+        <!-- Cột 5: Bước 5 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-3.5 px-5 py-2 rounded-full bg-slate-900/90 border border-slate-800 text-emerald-400 text-sm font-black shadow-lg flex items-center space-x-2.5">
+            <span class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[11px] shrink-0">5</span>
+            <span class="step-title-d-5 whitespace-nowrap">Bước 5: Đăng ký thành công</span>
+          </div>
+          <div id="d-device-5" class="phone-mockup-frame bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- 3. TEMPLATES HTML TÁI SỬ DỤNG CHO CẢ MOBILE VÀ DESKTOP              -->
+  <!-- =================================================================== -->
+  <template id="tpl-status-bar">
+    <div class="pt-3 px-7 pb-2 flex justify-between items-center text-slate-900 bg-white z-30 shrink-0">
+      <span class="text-sm font-semibold tracking-tight">09:41</span>
+      <div class="w-24 h-4 bg-slate-900 rounded-full mx-auto"></div>
+      <div class="flex items-center space-x-1.5 text-xs">
+        <i class="fa-solid fa-signal text-[11px]"></i>
+        <i class="fa-solid fa-wifi text-[11px]"></i>
+        <div class="flex items-center space-x-0.5 ml-1">
+          <div class="w-5 h-2.5 border border-slate-900 rounded-xs p-[1px] flex items-center">
+            <div class="bg-emerald-500 h-full w-[98%] rounded-[1px]"></div>
+          </div>
+          <div class="w-0.5 h-1 bg-slate-900 rounded-r-xs"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-home-bar">
+    <div class="bg-white pb-2 pt-1 flex justify-center z-20 shrink-0">
+      <div class="w-32 h-1 bg-slate-900 rounded-full"></div>
+    </div>
+  </template>
+
+  <!-- HTML NỘI DUNG BƯỚC 1: TẢI APP TRÊN KHO ỨNG DỤNG -->
+  <template id="tpl-step-1">
+    <div class="flex-1 flex flex-col overflow-hidden relative bg-white">
+      <header class="px-5 py-3 flex items-center justify-between border-b border-slate-100 shrink-0">
+        <span class="flex items-center gap-1.5 text-blue-600 font-semibold text-sm">
+          <i class="fa-solid fa-chevron-left text-xs"></i> <span data-i18n="store_search">Tìm kiếm</span>
+        </span>
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">App Store</span>
+      </header>
+
+      <main class="app-main flex-1 overflow-y-auto px-5 pt-5 pb-8 flex flex-col justify-between">
+        <div class="space-y-4">
+          <!-- Thông tin ứng dụng trên Store -->
+          <div class="flex items-start gap-4">
+            <div class="w-20 h-20 rounded-2xl bg-white border border-slate-100 shadow-md flex items-center justify-center p-2 shrink-0">
+              <img src="https://lh3.googleusercontent.com/d/1cE6RCe1tQq0QxXSbz0zLr9LvPgyrSS9x" alt="Tingo Pay Logo" class="w-full h-full object-contain">
+            </div>
+            <div class="flex-1 min-w-0 pt-0.5">
+              <h4 class="text-xl font-bold text-slate-900 leading-snug">Tingo Pay</h4>
+              <p class="text-xs text-slate-500 mt-0.5" data-i18n="app_sub_desc">Mã QR thanh toán ngân hàng</p>
+              
+              <!-- Nút tải ứng dụng khoanh đỏ hướng dẫn -->
+              <div class="mt-3 relative inline-block">
+                <div class="guide-callout -top-3.5 -right-14">
+                  <i class="fa-solid fa-hand-pointer text-[10px]"></i>
+                  <span data-i18n="callout_install">CÀI ĐẶT</span>
+                </div>
+                <button onclick="navigateStep(1)" class="guide-highlight bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs px-7 py-2 rounded-full shadow-sm transition">
+                  <span data-i18n="btn_install">Cài đặt</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chỉ số xếp hạng ứng dụng -->
+          <div class="py-3 border-t border-b border-slate-100 grid grid-cols-4 text-center divide-x divide-slate-100 text-slate-600">
+            <div><div class="text-[9px] uppercase text-slate-400 font-semibold" data-i18n="stat_rate">XẾP HẠNG</div><div class="text-sm font-bold mt-0.5">4.8 ★</div></div>
+            <div><div class="text-[9px] uppercase text-slate-400 font-semibold" data-i18n="stat_age">TUỔI</div><div class="text-sm font-bold mt-0.5">4+</div></div>
+            <div><div class="text-[9px] uppercase text-slate-400 font-semibold" data-i18n="stat_rank">BXH</div><div class="text-sm font-bold mt-0.5">#1</div></div>
+            <div><div class="text-[9px] uppercase text-slate-400 font-semibold" data-i18n="stat_dev">NHÀ PT</div><div class="text-xs font-bold mt-0.5 truncate">BLUECOM</div></div>
+          </div>
+
+          <!-- Nút Store chính thức -->
+          <div class="grid grid-cols-2 gap-2.5 pt-2">
+            <a href="https://apps.apple.com/vn/app/tingo-pay/id6447118484?l=vi" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 h-12 px-2 bg-black text-white rounded-xl border border-slate-800 transition active:scale-95">
+              <svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="#fff"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
+              <div class="text-left leading-none">
+                <span class="block text-[8px] uppercase tracking-wide opacity-80" data-i18n="download_on">Tải về từ</span>
+                <span class="block text-[14px] font-semibold tracking-tight mt-0.5">App Store</span>
+              </div>
+            </a>
+
+            <a href="https://play.google.com/store/apps/details?id=com.tingo.pay&pcampaignid=web_share" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 h-12 px-2 bg-black text-white rounded-xl border border-slate-800 transition active:scale-95">
+              <svg class="w-6 h-6 shrink-0" viewBox="40 24 436 464">
+                <path fill="#00a0ff" d="M48 59.49v393a4.33 4.33 0 007.37 3.07L260 256 55.37 56.42A4.33 4.33 0 0048 59.49z"/>
+                <path fill="#00e676" d="M345.8 174L89.22 32.64l-.16-.09c-4.42-2.4-8.62 3.58-5 7.06l201.13 192.32z"/>
+                <path fill="#ff3a44" d="M84.08 472.4c-3.62 3.48.56 9.46 5 7.06l.16-.09L345.8 338l-60.61-57.95z"/>
+                <path fill="#ffc900" d="M449.38 231l-71.65-39.46L310.36 256l67.37 64.43L449.38 281c19.49-10.77 19.49-39.23 0-50z"/>
+              </svg>
+              <div class="text-left leading-none">
+                <span class="block text-[8px] uppercase tracking-wider opacity-80" data-i18n="get_it_on">Tải ngay trên</span>
+                <span class="block text-[14px] font-medium mt-0.5">Google Play</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <p class="text-xs lg:text-sm font-medium text-slate-600 text-center leading-relaxed mt-4" data-i18n="step1_guide">
+          Tìm kiếm từ khóa <strong>“Tingo Pay”</strong> trên App Store hoặc Google Play và tiến hành cài đặt ứng dụng.
+        </p>
+      </main>
+    </div>
+  </template>
+
+  <!-- HTML NỘI DUNG BƯỚC 2: CHỌN ĐĂNG KÝ MỚI -->
+  <template id="tpl-step-2">
+    <div class="flex-1 flex flex-col overflow-hidden relative bg-white px-6 py-6 justify-between">
+      <div class="flex items-center justify-between">
+        <img src="https://lh3.googleusercontent.com/d/1cE6RCe1tQq0QxXSbz0zLr9LvPgyrSS9x" alt="Tingo Pay Logo" class="h-8 w-auto object-contain">
+        <span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">VN</span>
+      </div>
+
+      <!-- Banner đồ họa ứng dụng -->
+      <div class="my-auto py-2 flex flex-col items-center justify-center">
+        <div class="w-48 h-36 bg-gradient-to-tr from-orange-100 via-amber-50 to-blue-50 rounded-3xl flex items-center justify-center shadow-inner relative overflow-hidden">
+          <i class="fa-solid fa-qrcode text-6xl text-tingo-orange drop-shadow-md"></i>
+          <span class="absolute bottom-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tingo Ecosystem</span>
+        </div>
+        <h3 class="text-sm font-bold text-slate-800 text-center mt-4" data-i18n="app_slogan">Ứng dụng tiện ích cho cuộc sống hiện đại</h3>
+      </div>
+
+      <!-- Khu vực nút đăng nhập và liên kết ĐĂNG KÝ MỚI KHOANH ĐỎ -->
+      <div class="space-y-4">
+        <button class="w-full h-12 bg-blue-600/50 text-white font-semibold text-xs rounded-2xl opacity-60 pointer-events-none" data-i18n="btn_login">
+          Đăng nhập
+        </button>
+
+        <div class="relative text-center">
+          <div class="guide-callout -top-3.5 right-6">
+            <i class="fa-solid fa-hand-pointer text-[10px]"></i>
+            <span data-i18n="callout_tap_here">BẤM VÀO ĐÂY</span>
+          </div>
+          <button onclick="navigateStep(1)" class="guide-highlight w-full py-3.5 px-4 rounded-2xl bg-orange-50/80 hover:bg-orange-100 transition active:scale-98">
+            <span class="text-xs font-bold text-blue-600 underline tracking-tight block" data-i18n="btn_register_new">
+              Đăng ký mở mới tài khoản Tingo Pay
+            </span>
+          </button>
+        </div>
+
+        <p class="text-xs lg:text-sm font-medium text-slate-600 text-center leading-relaxed" data-i18n="step2_guide">
+          Tại màn hình đăng nhập, bấm vào dòng chữ <strong>“Đăng ký mở mới tài khoản Tingo Pay”</strong>.
+        </p>
+      </div>
+    </div>
+  </template>
+
+  <!-- HTML NỘI DUNG BƯỚC 3: NHẬP SỐ ĐIỆN THOẠI -->
+  <template id="tpl-step-3">
+    <div class="flex-1 flex flex-col overflow-hidden relative bg-white px-6 py-6 justify-between">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateStep(-1)" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-blue-600 font-bold">
+          <i class="fa-solid fa-chevron-left text-xs"></i>
+        </button>
+        <span class="font-bold text-xs text-slate-900" data-i18n="title_open_acc">Mở tài khoản mới</span>
+        <img src="https://lh3.googleusercontent.com/d/1cE6RCe1tQq0QxXSbz0zLr9LvPgyrSS9x" alt="Logo" class="h-6 w-auto object-contain">
+      </div>
+
+      <div class="my-auto space-y-6">
+        <div>
+          <h4 class="text-xl font-bold text-slate-900" data-i18n="phone_title">Nhập số điện thoại *</h4>
+          <p class="text-xs text-slate-500 mt-1" data-i18n="phone_desc">để đăng ký tài khoản Tingo Pay</p>
+        </div>
+
+        <!-- Ô nhập số điện thoại -->
+        <div class="relative">
+          <div class="p-3.5 rounded-2xl border-2 border-blue-600 bg-sky-50/30 flex items-center justify-between shadow-xs">
+            <span class="text-base font-bold text-slate-800 tracking-wider">0987 654 321</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="relative">
+          <div class="guide-callout -top-3.5 right-6">
+            <i class="fa-solid fa-arrow-pointer text-[10px]"></i>
+            <span data-i18n="callout_continue">BẤM TIẾP TỤC</span>
+          </div>
+          <button onclick="navigateStep(1)" class="guide-highlight w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-2xl shadow-md transition active:scale-98" data-i18n="btn_continue">
+            Tiếp tục
+          </button>
+        </div>
+
+        <p class="text-xs lg:text-sm font-medium text-slate-600 text-center leading-relaxed" data-i18n="step3_guide">
+          Nhập chính xác số điện thoại đăng ký cửa hàng, sau đó bấm <strong>“Tiếp tục”</strong>.
+        </p>
+      </div>
+    </div>
+  </template>
+
+  <!-- HTML NỘI DUNG BƯỚC 4: THIẾT LẬP MẬT KHẨU -->
+  <template id="tpl-step-4">
+    <div class="flex-1 flex flex-col overflow-hidden relative bg-white px-6 py-6 justify-between">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateStep(-1)" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-blue-600 font-bold">
+          <i class="fa-solid fa-chevron-left text-xs"></i>
+        </button>
+        <span class="font-bold text-xs text-slate-900" data-i18n="title_open_acc">Mở tài khoản mới</span>
+        <img src="https://lh3.googleusercontent.com/d/1cE6RCe1tQq0QxXSbz0zLr9LvPgyrSS9x" alt="Logo" class="h-6 w-auto object-contain">
+      </div>
+
+      <div class="my-auto space-y-6">
+        <div>
+          <h4 class="text-lg font-bold text-slate-900" data-i18n="pwd_title">Thiết lập mật khẩu cho tài khoản</h4>
+          <p class="text-xs font-semibold text-slate-500 mt-0.5">0987 654 321</p>
+        </div>
+
+        <!-- 6 chấm mã PIN mật khẩu -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-4">
+          <div>
+            <p class="text-[11px] font-semibold text-slate-500 mb-2" data-i18n="pwd_enter">Nhập mật khẩu (6 chữ số)</p>
+            <div class="flex gap-3 justify-center">
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-200/60">
+            <p class="text-[11px] font-semibold text-slate-500 mb-2" data-i18n="pwd_reenter">Nhập lại mật khẩu</p>
+            <div class="flex gap-3 justify-center">
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded-full"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="relative">
+          <div class="guide-callout -top-3.5 right-6">
+            <i class="fa-solid fa-arrow-pointer text-[10px]"></i>
+            <span data-i18n="callout_register">BẤM ĐĂNG KÝ</span>
+          </div>
+          <button onclick="navigateStep(1)" class="guide-highlight w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-2xl shadow-md transition active:scale-98" data-i18n="btn_register">
+            Đăng ký
+          </button>
+        </div>
+
+        <p class="text-xs lg:text-sm font-medium text-slate-600 text-center leading-relaxed" data-i18n="step4_guide">
+          Nhập 6 ký số mật khẩu bảo vệ và xác nhận lại, sau đó bấm <strong>“Đăng ký”</strong> để hoàn tất.
+        </p>
+      </div>
+    </div>
+  </template>
+
+  <!-- HTML NỘI DUNG BƯỚC 5: ĐĂNG KÝ THÀNH CÔNG -->
+  <template id="tpl-step-5">
+    <div class="flex-1 flex flex-col overflow-hidden relative bg-white px-6 py-6 justify-between text-center">
+      <div class="flex justify-center pt-1">
+        <img src="https://lh3.googleusercontent.com/d/1cE6RCe1tQq0QxXSbz0zLr9LvPgyrSS9x" alt="Tingo Pay Logo" class="h-8 w-auto object-contain">
+      </div>
+
+      <!-- Đồ họa cộng đồng người dùng thành công -->
+      <div class="my-auto space-y-5">
+        <div class="w-full h-44 bg-gradient-to-b from-sky-50/60 to-emerald-50/40 rounded-3xl flex items-center justify-center p-3 relative overflow-hidden border border-slate-100">
+          <div class="relative w-64 h-36 flex items-center justify-center">
+            <div class="absolute -top-1 left-4 w-12 h-14 bg-amber-500 rounded-2xl rotate-[-12deg] shadow-sm flex items-center justify-center text-white text-lg"><i class="fa-solid fa-user-astronaut"></i></div>
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-14 h-16 bg-blue-600 rounded-2xl shadow-sm flex items-center justify-center text-white text-xl"><i class="fa-solid fa-user-tie"></i></div>
+            <div class="absolute -top-1 right-4 w-12 h-14 bg-emerald-600 rounded-2xl rotate-[12deg] shadow-sm flex items-center justify-center text-white text-lg"><i class="fa-solid fa-user-gear"></i></div>
+            <div class="absolute bottom-1 left-10 w-14 h-16 bg-orange-500 rounded-2xl shadow-md flex items-center justify-center text-white text-xl z-10"><i class="fa-solid fa-user-check"></i></div>
+            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-16 h-18 bg-indigo-600 rounded-2xl shadow-lg flex items-center justify-center text-white text-2xl z-20"><i class="fa-solid fa-user-shield"></i></div>
+            <div class="absolute bottom-1 right-10 w-14 h-16 bg-rose-500 rounded-2xl shadow-md flex items-center justify-center text-white text-xl z-10"><i class="fa-solid fa-user-nurse"></i></div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-2xl font-bold text-emerald-600 tracking-tight" data-i18n="success_title">Đăng ký thành công!</h4>
+          <p class="text-xs text-slate-500 mt-1.5" data-i18n="success_desc">Chào mừng bạn đến với hệ sinh thái thanh toán Tingo Pay.</p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <a href="https://vietqr.vn" target="_blank" rel="noopener noreferrer" class="w-full h-12 bg-sky-50 hover:bg-sky-100 text-blue-600 font-bold text-xs rounded-2xl transition flex items-center justify-center shadow-xs border border-sky-100" data-i18n="btn_home_tingo">
+          Trang chủ Tingo Pay
+        </a>
+
+        <p class="text-xs lg:text-sm font-medium text-slate-600 text-center leading-relaxed" data-i18n="step5_guide">
+          Màn hình thông báo hoàn tất hiển thị, bạn có thể bấm trực tiếp vào <strong>“Trang chủ Tingo Pay”</strong> để bắt đầu sử dụng.
+        </p>
+      </div>
+    </div>
+  </template>
+
+  <!-- =================================================================== -->
+  <!-- 4. LOGIC JAVASCRIPT & TỪ ĐIỂN ĐA NGÔN NGỮ (i18n)                   -->
+  <!-- =================================================================== -->
+  <script>
+    let currentStep = 1;
+    const totalSteps = 5;
+    let isDesktopMode = false;
+    let currentLang = 'vi';
+
+    // 1. TỪ ĐIỂN DỮ LIỆU ĐA NGÔN NGỮ (VI, EN, CN, KR)
+    const translations = {
+      vi: {
+        doc_title: "TẢI APP & TẠO TÀI KHOẢN TINGO PAY",
+        steps: [
+          "Bước 1: Tải App Tingo Pay trên kho ứng dụng",
+          "Bước 2: Chọn đăng ký tài khoản mới",
+          "Bước 3: Nhập số điện thoại đăng ký",
+          "Bước 4: Thiết lập mật khẩu tài khoản",
+          "Bước 5: Hoàn tất đăng ký thành công"
+        ],
+        store_search: "Tìm kiếm",
+        app_sub_desc: "Mã QR thanh toán ngân hàng",
+        callout_install: "CÀI ĐẶT",
+        btn_install: "Cài đặt",
+        stat_rate: "XẾP HẠNG",
+        stat_age: "TUỔI",
+        stat_rank: "BXH",
+        stat_dev: "NHÀ PT",
+        download_on: "Tải về từ",
+        get_it_on: "Tải ngay trên",
+        step1_guide: "Tìm kiếm từ khóa <strong>“Tingo Pay”</strong> trên App Store hoặc Google Play và tiến hành cài đặt ứng dụng.",
+        app_slogan: "Ứng dụng tiện ích cho cuộc sống hiện đại",
+        btn_login: "Đăng nhập",
+        callout_tap_here: "BẤM VÀO ĐÂY",
+        btn_register_new: "Đăng ký mở mới tài khoản Tingo Pay",
+        step2_guide: "Tại màn hình đăng nhập, bấm vào dòng chữ <strong>“Đăng ký mở mới tài khoản Tingo Pay”</strong>.",
+        title_open_acc: "Mở tài khoản mới",
+        phone_title: "Nhập số điện thoại *",
+        phone_desc: "để đăng ký tài khoản Tingo Pay",
+        callout_continue: "BẤM TIẾP TỤC",
+        btn_continue: "Tiếp tục",
+        step3_guide: "Nhập chính xác số điện thoại đăng ký cửa hàng, sau đó bấm <strong>“Tiếp tục”</strong>.",
+        pwd_title: "Thiết lập mật khẩu cho tài khoản",
+        pwd_enter: "Nhập mật khẩu (6 chữ số)",
+        pwd_reenter: "Nhập lại mật khẩu",
+        callout_register: "BẤM ĐĂNG KÝ",
+        btn_register: "Đăng ký",
+        step4_guide: "Nhập 6 ký số mật khẩu bảo vệ và xác nhận lại, sau đó bấm <strong>“Đăng ký”</strong> để hoàn tất.",
+        success_title: "Đăng ký thành công!",
+        success_desc: "Chào mừng bạn đến với hệ sinh thái thanh toán Tingo Pay.",
+        btn_home_tingo: "Trang chủ Tingo Pay",
+        step5_guide: "Màn hình thông báo hoàn tất hiển thị, bạn có thể bấm trực tiếp vào <strong>“Trang chủ Tingo Pay”</strong> để bắt đầu sử dụng."
+      },
+      en: {
+        doc_title: "DOWNLOAD APP & CREATE TINGO PAY ACCOUNT",
+        steps: [
+          "Step 1: Download Tingo Pay App from App Store",
+          "Step 2: Select create a new account",
+          "Step 3: Enter registration phone number",
+          "Step 4: Set up account password",
+          "Step 5: Registration completed successfully"
+        ],
+        store_search: "Search",
+        app_sub_desc: "Bank payment QR Code",
+        callout_install: "INSTALL",
+        btn_install: "Get",
+        stat_rate: "RATINGS",
+        stat_age: "AGE",
+        stat_rank: "CHART",
+        stat_dev: "DEVELOPER",
+        download_on: "Download on",
+        get_it_on: "GET IT ON",
+        step1_guide: "Search for <strong>“Tingo Pay”</strong> on App Store or Google Play and install the application.",
+        app_slogan: "Smart utility app for modern lifestyle",
+        btn_login: "Log In",
+        callout_tap_here: "TAP HERE",
+        btn_register_new: "Register a new Tingo Pay account",
+        step2_guide: "On the login screen, tap on <strong>“Register a new Tingo Pay account”</strong>.",
+        title_open_acc: "Create New Account",
+        phone_title: "Enter Phone Number *",
+        phone_desc: "to register your Tingo Pay account",
+        callout_continue: "TAP CONTINUE",
+        btn_continue: "Continue",
+        step3_guide: "Enter your registered store phone number accurately, then tap <strong>“Continue”</strong>.",
+        pwd_title: "Set Account Password",
+        pwd_enter: "Enter password (6 digits)",
+        pwd_reenter: "Re-enter password",
+        callout_register: "TAP REGISTER",
+        btn_register: "Register",
+        step4_guide: "Enter 6-digit security password and confirm, then tap <strong>“Register”</strong> to complete.",
+        success_title: "Registration Successful!",
+        success_desc: "Welcome to the Tingo Pay payment ecosystem.",
+        btn_home_tingo: "Tingo Pay Home",
+        step5_guide: "Completion screen is displayed, tap on <strong>“Tingo Pay Home”</strong> to start using."
+      },
+      cn: {
+        doc_title: "下载应用并注册 TINGO PAY 账户",
+        steps: [
+          "步骤 1: 在应用商店下载 Tingo Pay 应用",
+          "步骤 2: 选择注册新账户",
+          "步骤 3: 输入注册手机号码",
+          "步骤 4: 设置账户登录密码",
+          "步骤 5: 账户注册成功完成"
+        ],
+        store_search: "搜索",
+        app_sub_desc: "银行扫码支付二维码",
+        callout_install: "安装",
+        btn_install: "获取",
+        stat_rate: "评分",
+        stat_age: "年龄",
+        stat_rank: "排行",
+        stat_dev: "开发者",
+        download_on: "下载于",
+        get_it_on: "获取于",
+        step1_guide: "在 App Store 或 Google Play 搜索 <strong>“Tingo Pay”</strong> 并下载安装该应用。",
+        app_slogan: "现代生活的智能实用应用",
+        btn_login: "登录",
+        callout_tap_here: "点击此处",
+        btn_register_new: "注册新的 Tingo Pay 账户",
+        step2_guide: "在登录界面中，点击 <strong>“注册新的 Tingo Pay 账户”</strong>。",
+        title_open_acc: "开立新账户",
+        phone_title: "输入手机号码 *",
+        phone_desc: "以注册您的 Tingo Pay 账户",
+        callout_continue: "点击继续",
+        btn_continue: "继续",
+        step3_guide: "准确输入您的门店注册手机号码，然后点击 <strong>“继续”</strong>。",
+        pwd_title: "设置账户密码",
+        pwd_enter: "输入密码 (6位数字)",
+        pwd_reenter: "确认密码",
+        callout_register: "点击注册",
+        btn_register: "注册",
+        step4_guide: "输入 6 位数字安全密码并再次确认，然后点击 <strong>“注册”</strong> 完成操作。",
+        success_title: "注册成功！",
+        success_desc: "欢迎加入 Tingo Pay 移动支付生态体系。",
+        btn_home_tingo: "Tingo Pay 首页",
+        step5_guide: "显示注册完成界面，您可以直接点击 <strong>“Tingo Pay 首页”</strong> 开始使用。"
+      },
+      kr: {
+        doc_title: "TINGO PAY 앱 다운로드 및 회원가입",
+        steps: [
+          "1단계: 앱스토어에서 Tingo Pay 앱 다운로드",
+          "2단계: 신규 회원가입 선택",
+          "3단계: 가입 휴대폰 번호 입력",
+          "4단계: 계정 비밀번호 설정",
+          "5단계: 회원가입 완료"
+        ],
+        store_search: "검색",
+        app_sub_desc: "은행 QR 결제 서비스",
+        callout_install: "설치",
+        btn_install: "받기",
+        stat_rate: "평점",
+        stat_age: "연령",
+        stat_rank: "순위",
+        stat_dev: "개발자",
+        download_on: "다운로드",
+        get_it_on: "다운로드",
+        step1_guide: "App Store 또는 Google Play에서 <strong>“Tingo Pay”</strong>를 검색하여 앱을 설치하세요.",
+        app_slogan: "현대 생활을 위한 스마트 유틸리티 앱",
+        btn_login: "로그인",
+        callout_tap_here: "여기를 누르세요",
+        btn_register_new: "Tingo Pay 신규 계정 가입",
+        step2_guide: "로그인 화면에서 <strong>“Tingo Pay 신규 계정 가입”</strong> 문구를 누르세요.",
+        title_open_acc: "신규 계정 만들기",
+        phone_title: "휴대폰 번호 입력 *",
+        phone_desc: "Tingo Pay 계정을 등록합니다",
+        callout_continue: "계속하기 누름",
+        btn_continue: "계속하기",
+        step3_guide: "매장 등록 휴대폰 번호를 정확히 입력한 후 <strong>“계속하기”</strong>를 누르세요.",
+        pwd_title: "계정 비밀번호 설정",
+        pwd_enter: "비밀번호 입력 (6자리)",
+        pwd_reenter: "비밀번호 재입력",
+        callout_register: "가입하기 누름",
+        btn_register: "가입하기",
+        step4_guide: "6자리 보안 비밀번호를 입력하고 확인한 후 <strong>“가입하기”</strong>를 누르세요.",
+        success_title: "가입이 완료되었습니다!",
+        success_desc: "Tingo Pay 결제 생태계에 오신 것을 환영합니다.",
+        btn_home_tingo: "Tingo Pay 홈",
+        step5_guide: "완료 화면이 나타나면 <strong>“Tingo Pay 홈”</strong>을 눌러 서비스를 시작하세요."
+      }
+    };
+
+    // 2. HÀM THỰC THI CHUYỂN NGÔN NGỮ
+    function setLanguage(lang) {
+      if (!translations[lang]) return;
+      currentLang = lang;
+      const dict = translations[lang];
+
+      // Đồng bộ giá trị dropdown Desktop và Mobile
+      document.querySelectorAll('.lang-select-elem').forEach(el => {
+        el.value = lang;
+      });
+
+      // Cập nhật text đơn thuần có data-i18n
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.innerHTML = dict[key];
+        }
+      });
+
+      // Cập nhật tiêu đề các bước Desktop
+      for (let i = 1; i <= 5; i++) {
+        const titleEl = document.querySelector(`.step-title-d-${i}`);
+        if (titleEl && dict.steps[i - 1]) {
+          titleEl.innerText = dict.steps[i - 1];
+        }
+      }
+
+      // Cập nhật tiêu đề thanh tiến trình Mobile
+      const mobStepText = document.getElementById('step-indicator-text');
+      if (mobStepText) {
+        mobStepText.innerText = dict.steps[currentStep - 1];
+      }
+    }
+
+    // 3. KHỞI TẠO VÀ RENDER THÀNH PHẦN
+    function initializeComponents() {
+      const statusBarHtml = document.getElementById('tpl-status-bar').innerHTML;
+      const homeBarHtml = document.getElementById('tpl-home-bar').innerHTML;
+
+      // Render 5 bước cho Mobile
+      for (let i = 1; i <= 5; i++) {
+        const mContainer = document.getElementById(`m-step-${i}`);
+        if (mContainer) mContainer.innerHTML = document.getElementById(`tpl-step-${i}`).innerHTML;
+      }
+
+      // Render 5 thiết bị cho Desktop Panorama
+      for (let i = 1; i <= 5; i++) {
+        const dDevice = document.getElementById(`d-device-${i}`);
+        if (dDevice) dDevice.innerHTML = statusBarHtml + document.getElementById(`tpl-step-${i}`).innerHTML + homeBarHtml;
+      }
+    }
+
+    // 4. ĐIỀU HƯỚNG BƯỚC TRÊN MOBILE
+    function goToStep(step) {
+      if (step < 1 || step > totalSteps) return;
+      currentStep = step;
+
+      for (let i = 1; i <= totalSteps; i++) {
+        const el = document.getElementById(`m-step-${i}`);
+        if (el) el.classList.toggle('hidden', i !== currentStep);
+      }
+
+      const progressPercent = (currentStep / totalSteps) * 100;
+      document.getElementById('progress-bar-fill').style.width = `${progressPercent}%`;
+      document.getElementById('step-indicator-text').innerText = translations[currentLang].steps[currentStep - 1];
+      document.getElementById('step-percentage-text').innerText = `${progressPercent}%`;
+
+      document.getElementById('nav-btn-prev').disabled = (currentStep === 1);
+      document.getElementById('nav-btn-next').disabled = (currentStep === totalSteps);
+
+      const currentSection = document.getElementById(`m-step-${currentStep}`);
+      if (currentSection) {
+        const mainEl = currentSection.querySelector('main');
+        if (mainEl) mainEl.scrollTop = 0;
+      }
+    }
+
+    function navigateStep(direction) {
+      goToStep(currentStep + direction);
+    }
+
+    // 5. XỬ LÝ VUỐT (SWIPE) TRÊN MOBILE
+    let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
+    const gestureZone = document.getElementById('screen-stage');
+
+    gestureZone.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    gestureZone.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 45) {
+        if (deltaX < 0 && currentStep < totalSteps) navigateStep(1);
+        else if (deltaX > 0 && currentStep > 1) navigateStep(-1);
+      }
+    }, { passive: true });
+
+    // 6. PHÁT HIỆN THIẾT BỊ VÀ ĐIỀU CHỈNH TỶ LỆ CO GIÃN THÔNG MINH (ĐÃ SỬA CHUẨN SCALE MOBILE)
+    function handleDeviceDetectionAndScale() {
+      const screenW = window.innerWidth;
+      const screenH = window.innerHeight;
+      isDesktopMode = (screenW >= 1024);
+
+      const mobileRoot = document.getElementById('mobile-view-root');
+      const desktopRoot = document.getElementById('desktop-view-root');
+
+      if (isDesktopMode) {
+        // --- CHẾ ĐỘ MÁY TÍNH (DESKTOP) ---
+        mobileRoot.style.display = 'none';
+        desktopRoot.style.display = 'flex';
+        desktopRoot.style.flexDirection = 'column';
+
+        const headerBar = document.getElementById('desktop-header-bar');
+        const canvas = document.getElementById('desktop-canvas');
+
+        const baseCanvasWidth = 2350;
+        const baseCanvasHeight = 990;
+
+        const availableW = screenW - 32;
+        const availableH = screenH - headerBar.offsetHeight - 24;
+
+        const scaleX = availableW / baseCanvasWidth;
+        const scaleY = availableH / baseCanvasHeight;
+        const scale = Math.min(scaleX, scaleY);
+
+        canvas.style.transform = `scale(${scale})`;
+        const renderedHeight = baseCanvasHeight * scale;
+        const topOffset = Math.max(8, (availableH - renderedHeight) / 2);
+        canvas.style.top = topOffset + 'px';
+
+      } else {
+        // --- CHẾ ĐỘ ĐIỆN THOẠI (MOBILE) ---
+        desktopRoot.style.display = 'none';
+        mobileRoot.style.display = 'flex';
+
+        const controlBar = document.getElementById('mobile-control-bar');
+        const fit = document.getElementById('screen-fit');
+        const stage = document.getElementById('screen-stage');
+
+        const baseWidth = 430;
+        const baseHeight = 900;
+
+        const availableWidth = screenW - 12;
+        // Chừa khoảng đệm an toàn cho thanh header và thanh địa chỉ Safari bên dưới
+        const controlH = controlBar ? controlBar.offsetHeight : 52;
+        const availableHeight = screenH - controlH - 18;
+
+        const scaleX = availableWidth / baseWidth;
+        const scaleY = availableHeight / baseHeight;
+        const scale = Math.min(scaleX, scaleY, 1);
+
+        stage.style.transform = `scale(${scale})`;
+        fit.style.height = (baseHeight * scale) + 'px';
+      }
+    }
+
+    window.addEventListener('resize', handleDeviceDetectionAndScale);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(handleDeviceDetectionAndScale, 150);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initializeComponents();
+      handleDeviceDetectionAndScale();
+      goToStep(1);
+      setLanguage('vi');
+      // Ép tính toán lại lần 2 sau khi font và bố cục trình duyệt ổn định
+      setTimeout(handleDeviceDetectionAndScale, 100);
+    });
+  </script>
+
+</body>
+</html>
