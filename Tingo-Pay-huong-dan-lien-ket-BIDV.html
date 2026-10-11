@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Tingo Pay - Hướng Dẫn Liên Kết BIDV</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome 6.4.0 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tingo: {
+              orange: '#FF6600',
+              'orange-dark': '#D94800',
+              navy: '#1A365D',
+              blue: '#0038A8',
+              deep: '#00226E',
+              link: '#007aff',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Khóa cuộn trang tuyệt đối để luôn vừa vặn 1 màn hình (Zero-Scroll) */
+    html, body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      margin: 0;
+      padding: 0;
+      color: #1e293b;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    /* Vòng tròn nhấp nháy phát sáng cam đậm (#D94800) */
+    @keyframes pulse-ring {
+      0% {
+        box-shadow: 0 0 0 0 rgba(217, 72, 0, 0.75), 0 4px 14px rgba(255, 102, 0, 0.35);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(217, 72, 0, 0), 0 4px 14px rgba(255, 102, 0, 0.35);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(217, 72, 0, 0), 0 4px 14px rgba(255, 102, 0, 0.35);
+      }
+    }
+
+    .guide-highlight {
+      border: 2.5px solid #D94800 !important;
+      animation: pulse-ring 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+      position: relative;
+      cursor: pointer;
+    }
+
+    /* Tag nhãn chỉ dẫn hướng dẫn */
+    .guide-callout {
+      position: absolute;
+      background: linear-gradient(135deg, #FF6600, #D94800);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 3px 8px rgba(217, 72, 0, 0.45);
+      white-space: nowrap;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    /* Tab active */
+    .tab-btn.active {
+      border-color: #007aff !important;
+      background-color: #ffffff !important;
+    }
+    .tab-btn.active .tab-title {
+      color: #007aff !important;
+      font-weight: 700 !important;
+    }
+    .tab-btn.active .tab-icon {
+      color: #007aff !important;
+    }
+    .tab-btn.active .tab-check {
+      display: flex !important;
+    }
+
+    /* Hiệu ứng trôi nhẹ cho kính lúp ở giữa */
+    @keyframes lens-float {
+      0%, 100% { transform: translate(-50%, 0); }
+      50% { transform: translate(-50%, -6px); }
+    }
+
+    .magnifier-center-wrap {
+      animation: lens-float 3s ease-in-out infinite;
+      filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.3));
+    }
+
+    .app-main::-webkit-scrollbar { display: none; }
+    .app-main { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* =================================================== */
+    /* CẤU TRÚC PHÂN CHIA CHẾ ĐỘ MOBILE & DESKTOP          */
+    /* =================================================== */
+    #mobile-view-root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    #desktop-view-root {
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .mobile-stage {
+      width: 430px;
+      height: 900px;
+      transform-origin: top center;
+      margin: 0 auto;
+      transition: transform 0.12s ease-out;
+      flex-shrink: 0;
+    }
+
+    /* Sân khấu toàn cảnh Desktop (5 thiết bị dàn ngang) */
+    .desktop-stage-canvas {
+      width: 2400px;
+      height: 1030px;
+      transform-origin: top center;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      margin-left: -1200px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 36px;
+    }
+
+    .phone-mockup-frame {
+      width: 430px;
+      height: 900px;
+      flex-shrink: 0;
+    }
+
+    /* Dropdown Options Hover & Selected */
+    .custom-lang-opt.active {
+      background-color: rgba(255, 102, 0, 0.15);
+      color: #FF6600;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="select-none">
+
+  <!-- =================================================================== -->
+  <!-- 1. GIAO DIỆN CHẾ ĐỘ ĐIỆN THOẠI (HIỂN THỊ KHI XEM TRÊN MOBILE)      -->
+  <!-- =================================================================== -->
+  <div id="mobile-view-root" class="px-2 py-1">
+    
+    <!-- THANH TIẾN TRÌNH & NÚT ĐIỀU HƯỚNG PREVIOUS / NEXT + CUSTOM DROPDOWN ĐẦY ĐỦ CỜ & TÊN -->
+    <header id="mobile-control-bar" class="max-w-[430px] w-full mb-1.5 px-3 py-1.5 bg-slate-800/95 border border-slate-700/80 rounded-2xl shadow-lg flex items-center justify-between gap-2 shrink-0 z-50 relative">
+      <!-- Nút Prev -->
+      <button id="nav-btn-prev" onclick="navigateStep(-1)" class="w-8 h-8 rounded-xl bg-slate-700/80 hover:bg-slate-600 text-white flex items-center justify-center transition active:scale-95 disabled:opacity-30 disabled:pointer-events-none shrink-0">
+        <i class="fa-solid fa-chevron-left text-xs"></i>
+      </button>
+
+      <!-- Tiến trình -->
+      <div class="flex-1 flex flex-col items-center px-1">
+        <div class="w-full flex justify-between items-center text-[10px] font-semibold text-slate-300 mb-0.5">
+          <span id="step-indicator-text" class="truncate pr-1">Bước 1: Thêm tài khoản</span>
+          <span id="step-percentage-text" class="text-tingo-orange font-bold shrink-0">20%</span>
+        </div>
+        <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden p-[1px]">
+          <div id="progress-bar-fill" class="h-full bg-gradient-to-r from-tingo-orange to-tingo-orange-dark rounded-full transition-all duration-300 w-1/5"></div>
+        </div>
+      </div>
+
+      <!-- Nút Next -->
+      <button id="nav-btn-next" onclick="navigateStep(1)" class="w-8 h-8 rounded-xl bg-tingo-orange hover:bg-tingo-orange-dark text-white flex items-center justify-center transition active:scale-95 shadow-md disabled:opacity-30 disabled:pointer-events-none shrink-0">
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </button>
+
+      <!-- CUSTOM DROPDOWN NGÔN NGỮ MOBILE: CÓ CỜ SVG VÀ TÊN ĐẦY ĐỦ, NẰM NGOÀI APP -->
+      <div class="relative shrink-0 pl-1 border-l border-slate-700">
+        <button id="mobile-lang-trigger" onclick="toggleLangMenu('mobile')" class="flex items-center space-x-1.5 bg-slate-700/90 hover:bg-slate-600 text-white text-[11px] font-bold py-1 px-2 rounded-xl border border-slate-600 focus:outline-none transition active:scale-95">
+          <i class="fa-solid fa-globe text-amber-400 text-xs"></i>
+          <span id="m-active-flag" class="w-4 h-3 rounded-2xs overflow-hidden flex items-center justify-center shrink-0"></span>
+          <span id="m-active-name" class="hidden sm:inline">Tiếng Việt</span>
+          <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
+        </button>
+
+        <!-- Menu Dropdown Popover Mobile -->
+        <div id="mobile-lang-menu" class="hidden absolute right-0 top-full mt-2 w-44 bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-700 p-1.5 z-50 space-y-1">
+          <button onclick="selectLanguage('vi')" class="custom-lang-opt w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-xl text-left text-xs font-semibold text-slate-200 hover:bg-slate-700/80 transition" data-lang="vi">
+            <span class="w-4 h-3 rounded-2xs overflow-hidden flex items-center justify-center shrink-0 shadow-xs"><svg class="w-full h-full" viewBox="0 0 30 20"><rect width="30" height="20" fill="#da251d"/><polygon points="15,4 17.5,12 11,7 19,7 12.5,12" fill="#ff0"/></svg></span>
+            <span>Tiếng Việt</span>
+          </button>
+          <button onclick="selectLanguage('en')" class="custom-lang-opt w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-xl text-left text-xs font-semibold text-slate-200 hover:bg-slate-700/80 transition" data-lang="en">
+            <span class="w-4 h-3 rounded-2xs overflow-hidden flex items-center justify-center shrink-0 shadow-xs"><svg class="w-full h-full" viewBox="0 0 30 20"><rect width="30" height="20" fill="#012169"/><path d="M0,0 L30,20 M30,0 L0,20" stroke="#fff" stroke-width="3"/><path d="M0,0 L30,20 M30,0 L0,20" stroke="#c8102e" stroke-width="1.8"/><path d="M15,0 V20 M0,10 H30" stroke="#fff" stroke-width="5"/><path d="M15,0 V20 M0,10 H30" stroke="#c8102e" stroke-width="3"/></svg></span>
+            <span>English</span>
+          </button>
+          <button onclick="selectLanguage('cn')" class="custom-lang-opt w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-xl text-left text-xs font-semibold text-slate-200 hover:bg-slate-700/80 transition" data-lang="cn">
+            <span class="w-4 h-3 rounded-2xs overflow-hidden flex items-center justify-center shrink-0 shadow-xs"><svg class="w-full h-full" viewBox="0 0 30 20"><rect width="30" height="20" fill="#de2910"/><polygon points="5,3 6,6 3,4 7,4 4,6" fill="#ffde00"/><polygon points="10,2 10.5,3.2 9.5,2.5 10.8,2.5 9.8,3.2" fill="#ffde00"/><polygon points="12,4 12.5,5.2 11.5,4.5 12.8,4.5 11.8,5.2" fill="#ffde00"/></svg></span>
+            <span>简体中文</span>
+          </button>
+          <button onclick="selectLanguage('kr')" class="custom-lang-opt w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-xl text-left text-xs font-semibold text-slate-200 hover:bg-slate-700/80 transition" data-lang="kr">
+            <span class="w-4 h-3 rounded-2xs overflow-hidden flex items-center justify-center shrink-0 shadow-xs"><svg class="w-full h-full bg-white" viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="5" fill="#cd2e3a"/><path d="M10,10 A5,5 0 0,0 20,10 A2.5,2.5 0 0,0 15,10 A2.5,2.5 0 0,1 10,10" fill="#0047a0"/></svg></span>
+            <span>한국어</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- KHUNG ĐIỆN THOẠI MOBILE (TỰ ĐỘNG THU NHỎ VỪA KHÍT 100DVH) -->
+    <div id="screen-fit" class="w-full flex-1 flex justify-center items-start overflow-hidden relative">
+      <div id="screen-stage" class="mobile-stage bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative">
+        
+        <!-- Status bar iOS Mobile -->
+        <div class="pt-3 px-7 pb-2 flex justify-between items-center text-slate-900 bg-white z-30 shrink-0">
+          <span class="text-sm font-semibold tracking-tight">09:41</span>
+          <div class="w-24 h-4 bg-slate-900 rounded-full mx-auto"></div>
+          <div class="flex items-center space-x-1.5 text-xs">
+            <i class="fa-solid fa-signal text-[11px]"></i>
+            <i class="fa-solid fa-wifi text-[11px]"></i>
+            <div class="flex items-center space-x-0.5 ml-1">
+              <div class="w-5 h-2.5 border border-slate-900 rounded-xs p-[1px] flex items-center">
+                <div class="bg-emerald-500 h-full w-[98%] rounded-[1px]"></div>
+              </div>
+              <div class="w-0.5 h-1 bg-slate-900 rounded-r-xs"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vùng chứa các bước màn hình Mobile -->
+        <div id="mobile-step-container" class="flex-1 flex flex-col overflow-hidden relative">
+          <div id="m-step-1" class="step-card flex-1 flex flex-col overflow-hidden"></div>
+          <div id="m-step-2" class="step-card flex-1 flex flex-col overflow-hidden hidden"></div>
+          <div id="m-step-3" class="step-card flex-1 flex flex-col overflow-hidden hidden"></div>
+          <div id="m-step-4" class="step-card flex-1 flex flex-col overflow-hidden hidden"></div>
+          <div id="m-step-5" class="step-card flex-1 flex flex-col overflow-hidden hidden"></div>
+        </div>
+
+        <!-- Floating Button (+) Mobile -->
+        <div id="m-fab-plus" class="absolute right-5 bottom-20 z-30 pointer-events-auto">
+          <button class="w-12 h-12 rounded-full bg-[#1877F2] hover:bg-blue-600 text-white shadow-xl flex items-center justify-center text-xl active:scale-95 transition-all">
+            <i class="fa-solid fa-plus font-light"></i>
+          </button>
+        </div>
+
+        <!-- Dock Điều Hướng Mobile -->
+        <nav id="m-bottom-dock" class="h-16 bg-white border-t border-slate-200/80 px-4 flex items-center justify-around z-20 shrink-0 relative">
+          <button class="w-[52px] h-[44px] rounded-2xl bg-[#dbeafe] flex items-center justify-center text-[#0284c7]">
+            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H4zm0 2h16a1 1 0 0 1 1 1v1H3V8a1 1 0 0 1 1-1zm-1 5h18v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4zm3 2a1 1 0 0 0 0 2h3a1 1 0 1 0 0-2H6z"/></svg>
+          </button>
+          <button class="w-[52px] h-[44px] flex items-center justify-center text-slate-400"><i class="fa-regular fa-newspaper text-lg"></i></button>
+          <button class="w-[52px] h-[44px] flex items-center justify-center text-[#0d9488]"><div class="border-2 border-dashed border-[#0d9488] p-1 rounded-md"><i class="fa-solid fa-qrcode text-lg"></i></div></button>
+          <button class="w-[52px] h-[44px] flex items-center justify-center text-slate-400"><i class="fa-solid fa-clipboard-check text-lg"></i></button>
+          <button class="w-[52px] h-[44px] flex items-center justify-center text-slate-400"><i class="fa-solid fa-store text-lg"></i></button>
+        </nav>
+
+        <!-- Home Bar iPhone Mobile -->
+        <div class="bg-white pb-2 pt-1 flex justify-center z-20 shrink-0">
+          <div class="w-32 h-1 bg-slate-900 rounded-full"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- 2. GIAO DIỆN CHẾ ĐỘ MÁY TÍNH (PANORAMA DESKTOP VIEW - 5 GIAO DIỆN)  -->
+  <!-- =================================================================== -->
+  <div id="desktop-view-root">
+    <!-- Header máy tính: CHỮ TO, KHÔNG TRÀN VIỀN + CUSTOM DROPDOWN ICON ĐỊA CẦU -->
+    <div id="desktop-header-bar" class="w-full py-3 px-8 flex justify-between items-center border-b border-slate-800 bg-slate-900/95 backdrop-blur z-50 shrink-0">
+      <div class="flex items-center space-x-4 min-w-0">
+        <img src="https://lh3.googleusercontent.com/d/1cE6RCe1tQq0QxXSbz0zLr9LvPgyrSS9x" alt="Tingo Pay" class="h-9 object-contain shrink-0" />
+        <span class="text-base lg:text-lg font-black text-slate-200 tracking-wide truncate">
+          <span class="text-slate-500 mr-2 font-normal">|</span>
+          <span data-i18n="doc_title">HƯỚNG DẪN LIÊN KẾT TÀI KHOẢN BIDV</span>
+        </span>
+      </div>
+
+      <!-- CUSTOM DROPDOWN NGÔN NGỮ DESKTOP KÈM ICON ĐỊA CẦU, CỜ SVG & TÊN ĐẦY ĐỦ -->
+      <div class="relative shrink-0 pl-4">
+        <button id="desktop-lang-trigger" onclick="toggleLangMenu('desktop')" class="flex items-center space-x-2.5 bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold py-1.5 px-3 rounded-xl border border-slate-700 hover:border-slate-500 focus:outline-none shadow-sm transition active:scale-95">
+          <i class="fa-solid fa-globe text-base text-amber-400"></i>
+          <span id="d-active-flag" class="w-4 h-3 rounded-2xs overflow-hidden flex items-center justify-center shrink-0 shadow-2xs"></span>
+          <span id="d-active-name">Tiếng Việt</span>
+          <i class="fa-solid fa-chevron-down text-[9px] text-slate-400"></i>
+        </button>
+
+        <!-- Menu Dropdown Popover Desktop -->
+        <div id="desktop-lang-menu" class="hidden absolute right-0 top-full mt-2 w-48 bg-slate-800/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-700 p-2 z-50 space-y-1">
+          <button onclick="selectLanguage('vi')" class="custom-lang-opt w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs font-semibold text-slate-200 hover:bg-slate-700/80 transition" data-lang="vi">
+            <span class="w-4 h-3 rounded-2xs overflow-hidden flex items-center justify-center shrink-0 shadow-xs"><svg class="w-full h-full" viewBox="0 0 30 20"><rect width="30" height="20" fill="#da251d"/><polygon points="15,4 17.5,12 11,7 19,7 12.5,12" fill="#ff0"/></svg></span>
+            <span>Tiếng Việt</span>
+          </button>
+          <button onclick="selectLanguage('en')" class="custom-lang-opt w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs font-semibold text-slate-200 hover:bg-slate-700/80 transition" data-lang="en">
+            <span class="w-4 h-3 rounded-2xs overflow-hidden flex items-center justify-center shrink-0 shadow-xs"><svg class="w-full h-full" viewBox="0 0 30 20"><rect width="30" height="20" fill="#012169"/><path d="M0,0 L30,20 M30,0 L0,20" stroke="#fff" stroke-width="3"/><path d="M0,0 L30,20 M30,0 L0,20" stroke="#c8102e" stroke-width="1.8"/><path d="M15,0 V20 M0,10 H30" stroke="#fff" stroke-width="5"/><path d="M15,0 V20 M0,10 H30" stroke="#c8102e" stroke-width="3"/></svg></span>
+            <span>English</span>
+          </button>
+          <button onclick="selectLanguage('cn')" class="custom-lang-opt w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs font-semibold text-slate-200 hover:bg-slate-700/80 transition" data-lang="cn">
+            <span class="w-4 h-3 rounded-2xs overflow-hidden flex items-center justify-center shrink-0 shadow-xs"><svg class="w-full h-full" viewBox="0 0 30 20"><rect width="30" height="20" fill="#de2910"/><polygon points="5,3 6,6 3,4 7,4 4,6" fill="#ffde00"/><polygon points="10,2 10.5,3.2 9.5,2.5 10.8,2.5 9.8,3.2" fill="#ffde00"/><polygon points="12,4 12.5,5.2 11.5,4.5 12.8,4.5 11.8,5.2" fill="#ffde00"/></svg></span>
+            <span>简体中文</span>
+          </button>
+          <button onclick="selectLanguage('kr')" class="custom-lang-opt w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs font-semibold text-slate-200 hover:bg-slate-700/80 transition" data-lang="kr">
+            <span class="w-4 h-3 rounded-2xs overflow-hidden flex items-center justify-center shrink-0 shadow-xs"><svg class="w-full h-full bg-white" viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="5" fill="#cd2e3a"/><path d="M10,10 A5,5 0 0,0 20,10 A2.5,2.5 0 0,0 15,10 A2.5,2.5 0 0,1 10,10" fill="#0047a0"/></svg></span>
+            <span>한국어</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sân khấu co giãn máy tính chứa cả 5 thiết bị -->
+    <div id="desktop-scale-container" class="w-full flex-1 relative overflow-hidden">
+      <div id="desktop-canvas" class="desktop-stage-canvas">
+        
+        <!-- Cột 1: Bước 1 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-4 px-5 py-2.5 rounded-full bg-slate-800 border-2 border-tingo-orange/80 text-tingo-orange text-base font-extrabold shadow-lg flex items-center space-x-2.5 whitespace-nowrap">
+            <span class="w-7 h-7 rounded-full bg-tingo-orange text-white flex items-center justify-center text-sm font-black shadow-sm">1</span>
+            <span class="step-title-d-1">Bước 1: Thêm tài khoản ngân hàng</span>
+          </div>
+          <div id="d-device-1" class="phone-mockup-frame bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative"></div>
+        </div>
+
+        <!-- Cột 2: Bước 2 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-4 px-5 py-2.5 rounded-full bg-slate-800 border-2 border-sky-500/80 text-sky-400 text-base font-extrabold shadow-lg flex items-center space-x-2.5 whitespace-nowrap">
+            <span class="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-sm font-black shadow-sm">2</span>
+            <span class="step-title-d-2">Bước 2: Nhập thông tin liên kết</span>
+          </div>
+          <div id="d-device-2" class="phone-mockup-frame bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative"></div>
+        </div>
+
+        <!-- Cột 3: Bước 3 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-4 px-5 py-2.5 rounded-full bg-slate-800 border-2 border-amber-500/80 text-amber-400 text-base font-extrabold shadow-lg flex items-center space-x-2.5 whitespace-nowrap">
+            <span class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-black shadow-sm">3</span>
+            <span class="step-title-d-3">Bước 3: Xác nhận điều khoản dịch vụ</span>
+          </div>
+          <div id="d-device-3" class="phone-mockup-frame bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative"></div>
+        </div>
+
+        <!-- Cột 4: Bước 4 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-4 px-5 py-2.5 rounded-full bg-slate-800 border-2 border-rose-500/80 text-rose-400 text-base font-extrabold shadow-lg flex items-center space-x-2.5 whitespace-nowrap">
+            <span class="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center text-sm font-black shadow-sm">4</span>
+            <span class="step-title-d-4">Bước 4: Nhập mã xác thực OTP BIDV</span>
+          </div>
+          <div id="d-device-4" class="phone-mockup-frame bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative"></div>
+        </div>
+
+        <!-- Cột 5: Bước 5 -->
+        <div class="flex flex-col items-center">
+          <div class="mb-4 px-5 py-2.5 rounded-full bg-slate-800 border-2 border-emerald-500/80 text-emerald-400 text-base font-extrabold shadow-lg flex items-center space-x-2.5 whitespace-nowrap">
+            <span class="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm font-black shadow-sm">5</span>
+            <span class="step-title-d-5">Bước 5: Liên kết BIDV thành công</span>
+          </div>
+          <div id="d-device-5" class="phone-mockup-frame bg-white rounded-[44px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col relative"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- 3. TEMPLATES HTML TÁI SỬ DỤNG CHO CẢ MOBILE VÀ DESKTOP              -->
+  <!-- =================================================================== -->
+  <template id="tpl-status-bar">
+    <div class="pt-3 px-7 pb-2 flex justify-between items-center text-slate-900 bg-white z-30 shrink-0">
+      <span class="text-sm font-semibold tracking-tight">09:41</span>
+      <div class="w-24 h-4 bg-slate-900 rounded-full mx-auto"></div>
+      <div class="flex items-center space-x-1.5 text-xs">
+        <i class="fa-solid fa-signal text-[11px]"></i>
+        <i class="fa-solid fa-wifi text-[11px]"></i>
+        <div class="flex items-center space-x-0.5 ml-1">
+          <div class="w-5 h-2.5 border border-slate-900 rounded-xs p-[1px] flex items-center">
+            <div class="bg-emerald-500 h-full w-[98%] rounded-[1px]"></div>
+          </div>
+          <div class="w-0.5 h-1 bg-slate-900 rounded-r-xs"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-home-bar">
+    <div class="bg-white pb-2 pt-1 flex justify-center z-20 shrink-0">
+      <div class="w-32 h-1 bg-slate-900 rounded-full"></div>
+    </div>
+  </template>
+
+  <!-- HTML NỘI DUNG BƯỚC 1 -->
+  <template id="tpl-step-1">
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+      <header class="px-5 py-2.5 flex items-center justify-between bg-white z-20 border-b border-slate-100 shrink-0">
+        <button class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200">
+          <i class="fa-solid fa-user text-base"></i>
+        </button>
+        <div class="flex items-center justify-center">
+          <img src="https://lh3.googleusercontent.com/d/1cE6RCe1tQq0QxXSbz0zLr9LvPgyrSS9x" alt="Tingo Pay" class="h-8 object-contain" />
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="relative">
+            <button onclick="navigateStep(1)" class="guide-highlight w-10 h-10 rounded-full bg-sky-50 text-tingo-link flex items-center justify-center hover:bg-orange-50 transition active:scale-95 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <rect x="2" y="6" width="18" height="13" rx="2" stroke="currentColor"/>
+                <line x1="2" y1="10" x2="20" y2="10" stroke="currentColor"/>
+                <path d="M19 13v6m-3-3h6" stroke="#D94800" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="guide-callout -bottom-6 right-0 scale-90">
+              <i class="fa-solid fa-hand-pointer text-[10px]"></i>
+              <span data-i18n="callout_pos2">VỊ TRÍ 2</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-main flex-1 overflow-y-auto pb-32 relative bg-slate-50/60">
+        <div class="w-full bg-gradient-to-r from-[#004e54] via-[#01656e] to-[#048893] px-4 py-3.5 text-white relative overflow-hidden shadow-inner">
+          <div class="flex justify-between items-center relative z-10">
+            <div class="max-w-[65%]">
+              <div class="flex items-center space-x-1.5 mb-1">
+                <span class="font-extrabold text-sm tracking-wider text-white">BIDV</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-yellow-400 inline-block"></span>
+                <span class="text-[11px] font-bold text-sky-200 tracking-wider">BLUECOM</span>
+              </div>
+              <div class="text-[12px] font-extrabold text-yellow-300 uppercase leading-snug" data-i18n="banner_title">Mở mới tài khoản doanh nghiệp</div>
+              <div class="text-[10px] text-white/90 leading-tight mt-1" data-i18n="banner_sub">TẶNG NGAY ĐẾN 6 LOA & PHẦN MỀM QUẢN LÝ DOANH THU</div>
+            </div>
+            <div class="w-20 h-16 flex items-center justify-end">
+              <div class="w-14 h-14 bg-white/95 rounded-xl shadow-md border border-white/60 p-1 flex flex-col items-center justify-center text-slate-800">
+                <div class="w-8 h-8 bg-slate-900 rounded-xs p-0.5 flex items-center justify-center">
+                  <div class="w-full h-full bg-white grid grid-cols-3 gap-0.5 p-0.5"><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div></div>
+                </div>
+                <span class="text-[6px] font-extrabold mt-0.5 text-slate-700">BIDV SOUND</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-5 pt-6 pb-2">
+          <div class="relative">
+            <div class="guide-callout -top-3.5 right-6">
+              <i class="fa-solid fa-hand-pointer text-xs"></i>
+              <span data-i18n="callout_pos1">VỊ TRÍ 1 - BẤM VÀO ĐÂY</span>
+            </div>
+            <button type="button" onclick="navigateStep(1)" class="guide-highlight w-full bg-white hover:bg-orange-50/40 active:scale-[0.99] transition-all rounded-2xl py-6 px-4 flex flex-col items-center justify-center shadow-md group">
+              <div class="w-14 h-12 mb-2 flex items-center justify-center text-slate-700 group-hover:text-tingo-orange transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                  <rect x="2" y="5" width="20" height="14" rx="2.5" stroke="currentColor"/>
+                  <line x1="2" y1="9.5" x2="22" y2="9.5" stroke="currentColor"/>
+                  <rect x="5" y="14" width="4" height="2" rx="0.5" fill="currentColor" stroke="none" />
+                  <path d="M19 12v6m-3-3h6" stroke="#D94800" stroke-width="2.4" />
+                </svg>
+              </div>
+              <span class="text-sm font-semibold text-slate-800 tracking-tight group-hover:text-tingo-orange-dark transition-colors" data-i18n="btn_add_bank">Thêm tài khoản ngân hàng</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="px-5 py-2">
+          <div class="w-full bg-gradient-to-r from-indigo-100 via-rose-100 to-amber-100 rounded-full px-4 py-2 flex items-center justify-between text-[11px] font-medium text-slate-700 shadow-2xs border border-white">
+            <div class="flex items-center space-x-1.5 truncate"><span class="text-tingo-orange text-xs">✦</span><span class="truncate" data-i18n="badge_scan_sub">a bạn để thêm tài khoản</span></div>
+            <span class="text-slate-800 font-semibold shrink-0 ml-2" data-i18n="badge_scan_main">Quét mã VietQR của bạn</span>
+          </div>
+        </div>
+
+        <div class="px-5 pt-3 pb-1">
+          <h2 class="text-lg font-bold text-slate-900 leading-snug" data-i18n="bank_support_title">Chúng tôi hỗ trợ các ngân hàng</h2>
+          <p class="text-xs text-slate-500 mt-0.5" data-i18n="bank_support_desc">Chọn ngân hàng để thực hiện thao tác thêm/liên kết.</p>
+        </div>
+
+        <div class="px-5 pt-2 relative">
+          <div class="grid grid-cols-4 gap-2">
+            <div class="bg-white rounded-xl p-2 h-14 border border-slate-100 shadow-2xs flex flex-col items-center justify-center relative blur-[1px] opacity-40"><span class="text-xs font-black text-[#0038A8]">VIB</span></div>
+            <div class="bg-white rounded-xl p-2 h-14 border border-slate-100 shadow-2xs flex items-center justify-center relative blur-[1px] opacity-40"><span class="text-xs font-black text-[#5C2D91]">TPBank</span></div>
+            <div class="bg-white rounded-xl p-2 h-14 border border-slate-100 shadow-2xs flex items-center justify-center relative blur-[1px] opacity-40"><span class="text-[11px] font-extrabold text-[#004B87]">VietinBank</span></div>
+            <div class="bg-white rounded-xl p-2 h-14 border border-slate-100 shadow-2xs flex flex-col items-center justify-center relative blur-[1px] opacity-40"><span class="text-xs font-black text-[#004B91]">NCB</span></div>
+            <div class="bg-white rounded-xl p-2 h-14 border border-slate-100 shadow-2xs flex items-center justify-center relative blur-[1px] opacity-40"><span class="text-xs font-black text-[#1F2C7C]">MB</span></div>
+            <div onclick="navigateStep(1)" class="bg-white rounded-xl p-2 h-14 border-2 border-emerald-500 shadow-md flex items-center justify-center relative hover:scale-105 transition-all z-10 cursor-pointer">
+              <img src="https://lh3.googleusercontent.com/d/10-nPgFcXAyCSzf-Jypq7KB499BPG5EJH" alt="BIDV" class="h-5 max-w-[85%] object-contain" />
+              <i class="fa-solid fa-building-columns text-[8px] text-emerald-600 absolute bottom-1 right-1.5"></i>
+            </div>
+            <div class="bg-white rounded-xl p-2 h-14 border border-slate-100 shadow-2xs flex flex-col items-center justify-center relative blur-[1px] opacity-40"><span class="text-[10px] font-bold text-[#F37021]">DONGA</span></div>
+            <div class="bg-white rounded-xl p-2 h-14 border border-slate-100 shadow-2xs flex items-center justify-center relative blur-[1px] opacity-40"><span class="text-[7px] font-bold text-slate-800">BNP</span></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </template>
+
+  <!-- HTML NỘI DUNG BƯỚC 2 -->
+  <template id="tpl-step-2">
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+      <header class="px-5 py-2.5 flex items-center justify-between bg-white z-20 border-b border-slate-100 shrink-0">
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateStep(-1)" class="w-10 h-10 rounded-full border border-slate-200/90 flex items-center justify-center text-slate-800 hover:bg-slate-100 transition active:scale-95">
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+          </button>
+          <h1 class="text-lg font-bold text-slate-900 tracking-tight" data-i18n="header_link">Liên kết</h1>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button class="px-3.5 py-1.5 rounded-full bg-[#BAE6FD] text-[#0284C7] text-xs font-semibold flex items-center space-x-1 shadow-2xs">
+            <i class="fa-solid fa-check text-[11px]"></i><span data-i18n="btn_save_info">Lưu t.tin</span>
+          </button>
+          <button class="w-10 h-10 rounded-full border border-slate-200/90 flex items-center justify-center text-slate-800">
+            <i class="fa-solid fa-qrcode text-base"></i>
+          </button>
+        </div>
+      </header>
+
+      <main class="app-main flex-1 overflow-y-auto px-5 pt-3 pb-8 relative bg-white">
+        <div class="mb-4">
+          <label class="block text-xs font-bold text-slate-800 mb-1.5"><span data-i18n="lbl_bank">Ngân hàng</span><span class="text-rose-500 ml-0.5">*</span></label>
+          <div class="w-full bg-[#f8fafc] border border-slate-200/80 rounded-full py-2 px-3.5 flex items-center justify-between shadow-2xs">
+            <div class="flex items-center space-x-2.5">
+              <div class="bg-white px-2 py-1 rounded-md border border-slate-200/60 flex items-center justify-center shadow-2xs">
+                <img src="https://lh3.googleusercontent.com/d/10-nPgFcXAyCSzf-Jypq7KB499BPG5EJH" alt="BIDV" class="h-4 object-contain" />
+              </div>
+              <span class="text-xs font-semibold text-slate-700">BIDV</span>
+            </div>
+            <i class="fa-solid fa-up-down text-[10px] text-slate-500"></i>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-xs font-bold text-slate-800 mb-2"><span data-i18n="lbl_acc_type">Loại tài khoản</span><span class="text-rose-500 ml-0.5">*</span></label>
+          <div class="grid grid-cols-3 gap-2.5">
+            <button type="button" class="tab-btn active tab-canhan relative h-20 bg-[#f8fafc] border border-slate-200 rounded-2xl p-2.5 flex flex-col justify-between items-start transition-all" onclick="selectAccountType('canhan')">
+              <div class="w-full flex items-center justify-between"><i class="tab-icon fa-regular fa-user text-base text-slate-500"></i><div class="tab-check hidden w-4 h-4 rounded-full bg-sky-100 text-[#007aff] items-center justify-center text-[9px] font-bold">✓</div></div>
+              <span class="tab-title text-[11px] font-medium text-slate-600" data-i18n="tab_individual">Cá nhân</span>
+            </button>
+            <button type="button" class="tab-btn tab-doanhnghiep relative h-20 bg-[#f8fafc] border border-slate-200 rounded-2xl p-2.5 flex flex-col justify-between items-start transition-all" onclick="selectAccountType('doanhnghiep')">
+              <div class="w-full flex items-center justify-between"><i class="tab-icon fa-regular fa-building text-base text-slate-500"></i><div class="tab-check hidden w-4 h-4 rounded-full bg-sky-100 text-[#007aff] items-center justify-center text-[9px] font-bold">✓</div></div>
+              <span class="tab-title text-[11px] font-medium text-slate-600" data-i18n="tab_enterprise">Doanh nghiệp</span>
+            </button>
+            <button type="button" class="tab-btn tab-hokinhdoanh relative h-20 bg-[#f8fafc] border border-slate-200 rounded-2xl p-2.5 flex flex-col justify-between items-start transition-all" onclick="selectAccountType('hokinhdoanh')">
+              <div class="w-full flex items-center justify-between"><i class="tab-icon fa-solid fa-store text-base text-slate-500"></i><div class="tab-check hidden w-4 h-4 rounded-full bg-sky-100 text-[#007aff] items-center justify-center text-[9px] font-bold">✓</div></div>
+              <span class="tab-title text-[11px] font-medium text-slate-600" data-i18n="tab_household">Hộ kinh doanh</span>
+            </button>
+          </div>
+        </div>
+
+        <form class="space-y-3.5" onsubmit="event.preventDefault();">
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1"><span data-i18n="lbl_acc_num">Số tài khoản</span><span class="text-rose-500 ml-0.5">*</span></label>
+            <div class="relative flex items-center"><i class="fa-regular fa-credit-card absolute left-3.5 text-slate-700 text-sm"></i><input type="text" class="input-stk w-full bg-[#f8fafc] border border-slate-200/90 rounded-full py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800" value="868xxxxxxx" data-i18n-ph="ph_acc_num" /></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1"><span data-i18n="lbl_acc_holder">Chủ tài khoản</span><span class="text-rose-500 ml-0.5">*</span></label>
+            <div class="relative flex items-center"><i class="fa-regular fa-circle-user absolute left-3.5 text-slate-700 text-sm"></i><input type="text" class="input-chutaikhoan w-full bg-[#f8fafc] border border-slate-200/90 rounded-full py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800 uppercase" value="NGUYEN VAN A" data-i18n-ph="ph_acc_holder" /></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1"><span data-i18n="lbl_auth_phone">Số điện thoại xác thực</span><span class="text-rose-500 ml-0.5">*</span></label>
+            <div class="relative flex items-center"><i class="fa-solid fa-phone absolute left-3.5 text-slate-700 text-xs"></i><input type="text" class="input-sdt w-full bg-[#f8fafc] border border-slate-200/90 rounded-full py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800" value="0912xxxxxx" data-i18n-ph="ph_auth_phone" /></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-800 mb-1"><span data-i18n="lbl_id_card">Định danh CCCD/MST/DKKD/HC</span><span class="text-rose-500 ml-0.5">*</span></label>
+            <div class="relative flex items-center"><i class="fa-solid fa-id-card-clip absolute left-3.5 text-slate-700 text-xs"></i><input type="text" class="input-dinhdanh w-full bg-[#f8fafc] border border-slate-200/90 rounded-full py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800" value="001095012345" data-i18n-ph="ph_id_card" /></div>
+          </div>
+          <div class="field-merchant hidden">
+            <label class="block text-xs font-bold text-slate-800 mb-1"><span data-i18n="lbl_merchant">Merchant ID (Do Tingo Pay cung cấp)</span><span class="text-rose-500 ml-0.5">*</span></label>
+            <div class="relative flex items-center"><i class="fa-regular fa-file-lines absolute left-3.5 text-slate-700 text-xs"></i><input type="text" class="input-merchant w-full bg-[#f8fafc] border border-slate-200/90 rounded-full py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800" value="Vui lòng liên hệ Tingo Pay" data-i18n-ph="ph_merchant" /></div>
+          </div>
+        </form>
+
+        <div class="mt-5">
+          <button type="button" onclick="navigateStep(1)" class="w-full py-3.5 rounded-full bg-[#007aff] hover:bg-blue-600 active:scale-[0.99] text-white font-bold text-sm flex items-center justify-center space-x-2 shadow-md transition-all">
+            <i class="fa-solid fa-link text-xs"></i><span data-i18n="btn_do_link">Thực hiện liên kết</span>
+          </button>
+        </div>
+      </main>
+    </div>
+  </template>
+
+  <!-- HTML NỘI DUNG BƯỚC 3 -->
+  <template id="tpl-step-3">
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+      <header class="px-5 py-2.5 flex items-center bg-white z-20 space-x-3 shrink-0 border-b border-slate-100">
+        <button onclick="navigateStep(-1)" class="w-10 h-10 rounded-full border border-slate-200/90 flex items-center justify-center text-slate-800 hover:bg-slate-100 transition active:scale-95 shrink-0">
+          <i class="fa-solid fa-chevron-left text-sm"></i>
+        </button>
+        <div class="flex-1 bg-slate-50 border border-slate-200/80 rounded-full py-1.5 px-3 flex items-center space-x-3 shadow-2xs">
+          <div class="bg-white rounded-full p-1 border border-slate-100 flex items-center justify-center shrink-0 w-16 h-7">
+            <img src="https://lh3.googleusercontent.com/d/10-nPgFcXAyCSzf-Jypq7KB499BPG5EJH" alt="BIDV" class="h-4 object-contain" />
+          </div>
+          <div class="flex flex-col overflow-hidden"><span class="text-xs font-black text-slate-800 leading-tight">868xxxxxxx</span><span class="text-[10px] font-bold text-slate-400 uppercase leading-none truncate">NGUYEN VAN A</span></div>
+        </div>
+        <img src="https://lh3.googleusercontent.com/d/1cE6RCe1tQq0QxXSbz0zLr9LvPgyrSS9x" alt="Tingo Pay" class="h-6 object-contain shrink-0" />
+      </header>
+
+      <main class="app-main flex-1 overflow-y-auto px-5 pt-4 pb-44 relative bg-white">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight mb-4" data-i18n="terms_title">Điều khoản sử dụng dịch vụ</h1>
+        <div class="w-full bg-[#f8fafc] border border-slate-100 rounded-3xl p-5 text-slate-700 text-[13px] leading-relaxed shadow-2xs">
+          <p class="mb-3 font-normal" data-i18n="terms_content">Tôi đã đọc và đồng ý để <strong class="text-slate-900 font-bold">BIDV</strong> cung cấp thông tin báo “Có” giao dịch trên Tài khoản Định danh của tôi cho <strong class="text-slate-900 font-bold">Công ty Cổ phần Bluecom Việt Nam</strong> và đồng ý với điều kiện và điều khoản sử dụng Dịch vụ.</p>
+          <a href="#" class="text-[#007aff] hover:underline font-medium inline-block text-[13px]" data-i18n="terms_link">Điều khoản sử dụng dịch vụ.</a>
+        </div>
+      </main>
+
+      <div class="absolute bottom-0 inset-x-0 z-30 px-5 pt-3 pb-8 bg-white/95 backdrop-blur-md border-t border-slate-100 space-y-3">
+        <div class="relative">
+          <div class="guide-callout -top-2.5 right-6"><i class="fa-solid fa-hand-pointer text-[10px]"></i><span data-i18n="callout_tick">TICK CHỌN</span></div>
+          <div class="checkbox-wrapper guide-highlight w-full bg-[#f8fafc] rounded-full py-3.5 px-4 flex items-center space-x-3 cursor-pointer select-none transition-all active:scale-[0.99] shadow-xs" onclick="toggleAgreeCheckbox()">
+            <div class="check-icon w-5 h-5 rounded-full bg-[#007aff] flex items-center justify-center text-white text-[11px] shadow-2xs"><i class="fa-solid fa-check"></i></div>
+            <span class="text-xs font-medium text-slate-800 tracking-tight" data-i18n="terms_agree_checkbox">Tôi đã đọc và đồng ý với các điều khoản</span>
+          </div>
+        </div>
+        <div class="relative">
+          <div class="guide-callout -top-2.5 right-6"><i class="fa-solid fa-arrow-pointer text-[10px]"></i><span data-i18n="callout_confirm">BẤM XÁC NHẬN</span></div>
+          <button type="button" onclick="navigateStep(1)" class="btn-confirm guide-highlight w-full py-3.5 rounded-full bg-[#007aff] hover:bg-blue-600 active:scale-[0.99] text-white font-bold text-sm flex items-center justify-center space-x-2 shadow-md transition-all">
+            <i class="fa-solid fa-check text-xs"></i><span data-i18n="btn_confirm">Xác nhận</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- HTML NỘI DUNG BƯỚC 4 -->
+  <template id="tpl-step-4">
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+      <header class="px-5 py-2.5 flex items-center bg-white z-20 space-x-3 shrink-0 border-b border-slate-100">
+        <button onclick="navigateStep(-1)" class="w-10 h-10 rounded-full border border-slate-200/90 flex items-center justify-center text-slate-800 hover:bg-slate-100 transition active:scale-95 shrink-0">
+          <i class="fa-solid fa-chevron-left text-sm"></i>
+        </button>
+        <div class="flex-1 bg-slate-50 border border-slate-200/80 rounded-full py-1.5 px-3 flex items-center space-x-3 shadow-2xs">
+          <div class="bg-white rounded-full p-1 border border-slate-100 flex items-center justify-center shrink-0 w-16 h-7">
+            <img src="https://lh3.googleusercontent.com/d/10-nPgFcXAyCSzf-Jypq7KB499BPG5EJH" alt="BIDV" class="h-4 object-contain" />
+          </div>
+          <div class="flex flex-col overflow-hidden"><span class="text-xs font-black text-slate-800 leading-tight">868xxxxxxx</span><span class="text-[10px] font-bold text-slate-400 uppercase leading-none truncate">NGUYEN VAN A</span></div>
+        </div>
+        <img src="https://lh3.googleusercontent.com/d/1cE6RCe1tQq0QxXSbz0zLr9LvPgyrSS9x" alt="Tingo Pay" class="h-6 object-contain shrink-0" />
+      </header>
+
+      <main class="app-main flex-1 overflow-y-auto px-5 pt-8 pb-20 relative bg-white text-center">
+        <h1 class="text-lg font-bold text-slate-900 tracking-tight mb-2" data-i18n="otp_title">Xác thực liên kết TK ngân hàng</h1>
+        <p class="text-xs text-slate-500 mb-8 font-normal"><span data-i18n="otp_sub">Nhập mã OTP từ BIDV gửi về số điện thoại</span> <span class="font-bold text-tingo-link">09* ***888</span></p>
+
+        <div class="flex justify-center items-center gap-2.5 max-w-[340px] mx-auto mb-6">
+          <div class="w-12 h-14 bg-[#f8fafc] border border-slate-200/90 rounded-2xl flex items-center justify-center text-xl font-bold text-slate-900 shadow-2xs">9</div>
+          <div class="w-12 h-14 bg-[#f8fafc] border border-slate-200/90 rounded-2xl flex items-center justify-center text-xl font-bold text-slate-900 shadow-2xs">2</div>
+          <div class="w-12 h-14 bg-[#f8fafc] border border-slate-200/90 rounded-2xl flex items-center justify-center text-xl font-bold text-slate-900 shadow-2xs">1</div>
+          <div class="w-12 h-14 bg-[#f8fafc] border border-slate-200/90 rounded-2xl flex items-center justify-center text-xl font-bold text-slate-900 shadow-2xs">9</div>
+          <div class="w-12 h-14 bg-[#f8fafc] border border-slate-200/90 rounded-2xl flex items-center justify-center text-xl font-bold text-slate-900 shadow-2xs">8</div>
+          <div class="w-12 h-14 bg-[#f8fafc] border border-slate-200/90 rounded-2xl flex items-center justify-center text-xl font-bold text-slate-900 shadow-2xs">1</div>
+        </div>
+
+        <div class="flex items-center justify-center gap-1.5 text-xs text-slate-500 mb-8 font-medium">
+          <span data-i18n="otp_expire_prefix">Mã OTP hết hạn sau</span><span class="countdown-badge bg-[#E0F2FE] text-[#0284C7] font-semibold px-2 py-0.5 rounded-full text-xs">01:59</span><span data-i18n="otp_expire_suffix">giây.</span>
+        </div>
+
+        <div class="relative max-w-[370px] mx-auto">
+          <div class="guide-callout -top-3 right-6"><i class="fa-solid fa-hand-pointer text-[10px]"></i><span data-i18n="callout_verify">BẤM VÀO ĐÂY</span></div>
+          <button type="button" onclick="navigateStep(1)" class="guide-highlight w-full py-3.5 rounded-full bg-[#007aff] hover:bg-blue-600 active:scale-[0.99] text-white font-bold text-sm flex items-center justify-center space-x-2 shadow-md transition-all">
+            <i class="fa-regular fa-circle-check text-base"></i><span data-i18n="btn_verify">Xác thực</span>
+          </button>
+        </div>
+      </main>
+    </div>
+  </template>
+
+  <!-- HTML NỘI DUNG BƯỚC 5 -->
+  <template id="tpl-step-5">
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+      <header class="px-5 py-2 flex items-center justify-between bg-white z-20 border-b border-slate-100 shrink-0">
+        <button class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200">
+          <i class="fa-solid fa-user text-base"></i>
+        </button>
+        <div class="flex items-center justify-center">
+          <img src="https://lh3.googleusercontent.com/d/10-nPgFcXAyCSzf-Jypq7KB499BPG5EJH" alt="BIDV" class="h-6 object-contain" />
+        </div>
+        <div class="flex items-center space-x-2">
+          <button class="w-10 h-10 rounded-full bg-sky-50 text-tingo-link flex items-center justify-center shadow-xs">
+            <i class="fa-regular fa-credit-card text-sm"></i>
+          </button>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-hidden relative bg-slate-50/50 flex flex-col justify-between pb-24">
+        <div>
+          <div class="w-full bg-gradient-to-r from-[#004e54] via-[#01656e] to-[#048893] px-4 py-2.5 text-white relative overflow-hidden shadow-inner">
+            <div class="flex justify-between items-center relative z-10">
+              <div class="max-w-[65%]">
+                <div class="flex items-center space-x-1.5 mb-0.5"><span class="font-extrabold text-sm tracking-wider text-white">BIDV</span><span class="w-2.5 h-2.5 rounded-full bg-yellow-400 inline-block"></span><span class="text-[11px] font-bold text-sky-200 tracking-wider">BLUECOM</span></div>
+                <div class="text-[12px] font-extrabold text-yellow-300 uppercase leading-snug" data-i18n="banner_title">Mở mới tài khoản doanh nghiệp</div>
+                <div class="text-[10px] text-white/90 leading-tight mt-0.5" data-i18n="banner_sub">TẶNG NGAY ĐẾN 6 LOA & PHẦN MỀM QUẢN LÝ DOANH THU</div>
+              </div>
+              <div class="w-18 h-14 flex items-center justify-end">
+                <div class="w-12 h-12 bg-white/95 rounded-xl shadow-md border border-white/60 p-1 flex flex-col items-center justify-center text-slate-800">
+                  <div class="w-6 h-6 bg-slate-900 rounded-xs p-0.5 flex items-center justify-center">
+                    <div class="w-full h-full bg-white grid grid-cols-3 gap-0.5 p-0.5"><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div></div>
+                  </div>
+                  <span class="text-[5px] font-extrabold mt-0.5 text-slate-700">BIDV SOUND</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-5 pt-3 pb-1 relative">
+            <div class="w-full bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col justify-between relative">
+              <div class="flex justify-between items-start mb-2">
+                <div class="bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200/70 flex items-center">
+                  <img src="https://lh3.googleusercontent.com/d/10-nPgFcXAyCSzf-Jypq7KB499BPG5EJH" alt="BIDV" class="h-3.5 object-contain" />
+                </div>
+                <!-- Vùng biểu tượng ngân hàng nhỏ -->
+                <div class="target-highlight w-8 h-8 rounded-full bg-slate-100/90 flex items-center justify-center text-[#0e7490] relative z-20">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7v2h20V7L12 2zm-8 8v8h3v-8H4zm6 0v8h4v-8h-4zm7 0v8h3v-8h-3zM2 20v2h20v-2H2z"/></svg>
+                </div>
+              </div>
+              <div><div class="text-base font-extrabold text-slate-900 tracking-wider">868xxxxxxx</div><div class="text-[11px] font-bold text-slate-500 uppercase mt-0.5">NGUYEN VAN A</div></div>
+              <div class="flex items-center justify-center space-x-1.5 mt-2"><div class="w-5 h-1.5 rounded-full bg-[#007aff]"></div><div class="w-1.5 h-1.5 rounded-full bg-slate-200"></div><div class="w-1.5 h-1.5 rounded-full bg-slate-200"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-5 py-1">
+          <div class="grid grid-cols-4 gap-y-2 gap-x-1.5 text-center mb-2.5">
+            <div class="flex flex-col items-center"><div class="w-9 h-9 rounded-xl bg-orange-50 text-[#FF6600] flex items-center justify-center text-xs mb-1"><i class="fa-solid fa-bolt"></i></div><span class="text-[9px] font-semibold text-slate-700 leading-tight" data-i18n="menu_act">Kích hoạt TK</span></div>
+            <div class="flex flex-col items-center"><div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-sm mb-1"><i class="fa-solid fa-qrcode"></i></div><span class="text-[9px] font-semibold text-slate-700 leading-tight" data-i18n="menu_vqr">Mã VietQR</span></div>
+            <div class="flex flex-col items-center"><div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs mb-1"><i class="fa-solid fa-share-nodes"></i></div><span class="text-[9px] font-semibold text-slate-700 leading-tight" data-i18n="menu_balance">Biến động số dư</span></div>
+            <div class="flex flex-col items-center"><div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xs mb-1"><i class="fa-solid fa-store"></i></div><span class="text-[9px] font-semibold text-slate-700 leading-tight" data-i18n="menu_store">Quản lý quán</span></div>
+          </div>
+          <div class="bg-white rounded-xl p-2.5 border border-slate-100 shadow-2xs flex items-center justify-between">
+            <div class="flex items-center space-x-2"><div class="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center p-0.5"><img src="https://lh3.googleusercontent.com/d/10-nPgFcXAyCSzf-Jypq7KB499BPG5EJH" alt="BIDV" class="h-2.5 object-contain" /></div><span class="text-xs font-bold text-slate-800">868xxxxxxx</span></div>
+            <div class="flex items-center space-x-1.5"><span class="text-xs font-bold text-emerald-600" data-i18n="status_linked">Đã liên kết</span><button class="px-2 py-0.5 rounded bg-sky-100 text-[#007aff] text-[9px] font-bold" data-i18n="btn_detail">Chi tiết</button></div>
+          </div>
+        </div>
+
+        <!-- LỚP PHỄU ÁNH SÁNG FADE MỜ -->
+        <svg class="absolute inset-0 w-full h-full pointer-events-none z-30" viewBox="0 0 430 750" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="softLightConeLang" x1="86%" y1="20%" x2="50%" y2="52%">
+              <stop offset="0%" stop-color="#FF6600" stop-opacity="0.38" />
+              <stop offset="45%" stop-color="#D94800" stop-opacity="0.18" />
+              <stop offset="100%" stop-color="#FF6600" stop-opacity="0.06" />
+            </linearGradient>
+          </defs>
+          <polygon points="362,142 382,142 285,400 145,400" fill="url(#softLightConeLang)" />
+          <line x1="362" y1="142" x2="145" y2="400" stroke="#D94800" stroke-opacity="0.4" stroke-width="1.2" stroke-dasharray="4,4" />
+          <line x1="382" y1="142" x2="285" y2="400" stroke="#D94800" stroke-opacity="0.4" stroke-width="1.2" stroke-dasharray="4,4" />
+        </svg>
+
+        <!-- KHỐI KÍNH LÚP PHÓNG ĐẠI Ở GIỮA -->
+        <div class="magnifier-center-wrap absolute left-1/2 top-[48%] -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none flex flex-col items-center">
+          <div class="relative w-28 h-28 rounded-full bg-white/95 backdrop-blur-md border-[4px] border-[#D94800] shadow-[0_16px_36px_rgba(217,72,0,0.45)] flex items-center justify-center overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-white/90 pointer-events-none z-10"></div>
+            <div class="w-20 h-20 rounded-full bg-sky-100 flex items-center justify-center text-[#0e7490] border border-sky-200 shadow-inner">
+              <svg class="w-12 h-12 transform scale-110" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7v2h20V7L12 2zm-8 8v8h3v-8H4zm6 0v8h4v-8h-4zm7 0v8h3v-8h-3zM2 20v2h20v-2H2z"/></svg>
+            </div>
+            <div class="absolute bottom-2 right-3 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black shadow-md z-20">✓</div>
+          </div>
+          <div class="w-3.5 h-5 bg-[#D94800] rounded-b-md shadow-sm -mt-0.5"></div>
+          <div class="flex flex-col items-center gap-1 mt-1">
+            <span class="bg-gradient-to-r from-[#FF6600] to-[#D94800] text-white text-[11px] font-black px-4 py-1 rounded-full shadow-lg whitespace-nowrap tracking-wide" data-i18n="badge_linked_success">ĐÃ LIÊN KẾT THÀNH CÔNG</span>
+          </div>
+        </div>
+      </main>
+
+      <!-- Decor riêng Thiết bị 5 Desktop -->
+      <div class="desktop-only-decor absolute right-5 bottom-20 z-30 pointer-events-auto">
+        <button class="w-12 h-12 rounded-full bg-[#1877F2] text-white shadow-xl flex items-center justify-center text-xl">
+          <i class="fa-solid fa-plus font-light"></i>
+        </button>
+      </div>
+      <nav class="desktop-only-decor h-16 bg-white border-t border-slate-200/80 px-4 flex items-center justify-around z-20 shrink-0 relative">
+        <button class="w-[52px] h-[44px] rounded-2xl bg-[#dbeafe] flex items-center justify-center text-[#0284c7]">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H4zm0 2h16a1 1 0 0 1 1 1v1H3V8a1 1 0 0 1 1-1zm-1 5h18v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4zm3 2a1 1 0 0 0 0 2h3a1 1 0 1 0 0-2H6z"/></svg>
+        </button>
+        <button class="w-[52px] h-[44px] flex items-center justify-center text-slate-400"><i class="fa-regular fa-newspaper text-lg"></i></button>
+        <button class="w-[52px] h-[44px] flex items-center justify-center text-[#0d9488]"><div class="border-2 border-dashed border-[#0d9488] p-1 rounded-md"><i class="fa-solid fa-qrcode text-lg"></i></div></button>
+        <button class="w-[52px] h-[44px] flex items-center justify-center text-slate-400"><i class="fa-solid fa-clipboard-check text-lg"></i></button>
+        <button class="w-[52px] h-[44px] flex items-center justify-center text-slate-400"><i class="fa-solid fa-store text-lg"></i></button>
+      </nav>
+    </div>
+  </template>
+
+  <!-- =================================================================== -->
+  <!-- 4. LOGIC JAVASCRIPT & TỪ ĐIỂN ĐA NGÔN NGỮ (i18n)                   -->
+  <!-- =================================================================== -->
+  <script>
+    let currentStep = 1;
+    const totalSteps = 5;
+    let isDesktopMode = false;
+    let currentLang = 'vi';
+
+    // 1. TỪ ĐIỂN DỮ LIỆU ĐA NGÔN NGỮ (VI, EN, CN, KR)
+    const translations = {
+      vi: {
+        doc_title: "HƯỚNG DẪN LIÊN KẾT TÀI KHOẢN BIDV",
+        steps: [
+          "Bước 1: Thêm tài khoản ngân hàng",
+          "Bước 2: Nhập thông tin liên kết",
+          "Bước 3: Xác nhận điều khoản dịch vụ",
+          "Bước 4: Nhập mã xác thực OTP BIDV",
+          "Bước 5: Liên kết BIDV thành công"
+        ],
+        callout_pos1: "VỊ TRÍ 1 - BẤM VÀO ĐÂY",
+        callout_pos2: "VỊ TRÍ 2",
+        callout_tick: "TICK CHỌN",
+        callout_confirm: "BẤM XÁC NHẬN",
+        callout_verify: "BẤM VÀO ĐÂY",
+        banner_title: "Mở mới tài khoản doanh nghiệp",
+        banner_sub: "TẶNG NGAY ĐẾN 6 LOA & PHẦN MỀM QUẢN LÝ DOANH THU",
+        btn_add_bank: "Thêm tài khoản ngân hàng",
+        badge_scan_sub: "a bạn để thêm tài khoản",
+        badge_scan_main: "Quét mã VietQR của bạn",
+        bank_support_title: "Chúng tôi hỗ trợ các ngân hàng",
+        bank_support_desc: "Chọn ngân hàng để thực hiện thao tác thêm/liên kết.",
+        header_link: "Liên kết",
+        btn_save_info: "Lưu t.tin",
+        lbl_bank: "Ngân hàng",
+        lbl_acc_type: "Loại tài khoản",
+        tab_individual: "Cá nhân",
+        tab_enterprise: "Doanh nghiệp",
+        tab_household: "Hộ kinh doanh",
+        lbl_acc_num: "Số tài khoản",
+        ph_acc_num: "Nhập số tài khoản ngân hàng",
+        lbl_acc_holder: "Chủ tài khoản",
+        ph_acc_holder: "Nhập tên chủ tài khoản ngân hàng",
+        lbl_auth_phone: "Số điện thoại xác thực",
+        ph_auth_phone: "Nhập SĐT đăng ký xác thực với ngân hàng",
+        lbl_id_card: "Định danh CCCD/MST/DKKD/HC",
+        ph_id_card: "Nhập thông tin định danh với ngân hàng",
+        lbl_merchant: "Merchant ID (Do Tingo Pay cung cấp)",
+        ph_merchant: "Nhập thông tin Merchant ID",
+        btn_do_link: "Thực hiện liên kết",
+        terms_title: "Điều khoản sử dụng dịch vụ",
+        terms_content: 'Tôi đã đọc và đồng ý để <strong class="text-slate-900 font-bold">BIDV</strong> cung cấp thông tin báo “Có” giao dịch trên Tài khoản Định danh của tôi cho <strong class="text-slate-900 font-bold">Công ty Cổ phần Bluecom Việt Nam</strong> và đồng ý với điều kiện và điều khoản sử dụng Dịch vụ.',
+        terms_link: "Điều khoản sử dụng dịch vụ.",
+        terms_agree_checkbox: "Tôi đã đọc và đồng ý với các điều khoản",
+        btn_confirm: "Xác nhận",
+        otp_title: "Xác thực liên kết TK ngân hàng",
+        otp_sub: "Nhập mã OTP từ BIDV gửi về số điện thoại",
+        otp_expire_prefix: "Mã OTP hết hạn sau",
+        otp_expire_suffix: "giây.",
+        btn_verify: "Xác thực",
+        menu_act: "Kích hoạt TK",
+        menu_vqr: "Mã VietQR",
+        menu_balance: "Biến động số dư",
+        menu_store: "Quản lý quán",
+        status_linked: "Đã liên kết",
+        btn_detail: "Chi tiết",
+        badge_linked_success: "ĐÃ LIÊN KẾT THÀNH CÔNG"
+      },
+      en: {
+        doc_title: "BIDV ACCOUNT LINKING GUIDE",
+        steps: [
+          "Step 1: Add bank account",
+          "Step 2: Enter linking information",
+          "Step 3: Confirm Terms of Service",
+          "Step 4: Enter BIDV OTP code",
+          "Step 5: BIDV linked successfully"
+        ],
+        callout_pos1: "POSITION 1 - TAP HERE",
+        callout_pos2: "POSITION 2",
+        callout_tick: "CHECK BOX",
+        callout_confirm: "TAP CONFIRM",
+        callout_verify: "TAP HERE",
+        banner_title: "Open New Business Account",
+        banner_sub: "FREE UP TO 6 SOUNDBOXES & REVENUE MANAGEMENT APP",
+        btn_add_bank: "Add Bank Account",
+        badge_scan_sub: "to link account",
+        badge_scan_main: "Scan your VietQR code",
+        bank_support_title: "Supported Banks",
+        bank_support_desc: "Select a bank to perform add/link action.",
+        header_link: "Link Account",
+        btn_save_info: "Save Info",
+        lbl_bank: "Bank",
+        lbl_acc_type: "Account Type",
+        tab_individual: "Individual",
+        tab_enterprise: "Corporate",
+        tab_household: "Household",
+        lbl_acc_num: "Account Number",
+        ph_acc_num: "Enter bank account number",
+        lbl_acc_holder: "Account Holder",
+        ph_acc_holder: "Enter bank account holder name",
+        lbl_auth_phone: "Verification Phone",
+        ph_auth_phone: "Enter phone registered with bank",
+        lbl_id_card: "ID / Tax Code / Business License",
+        ph_id_card: "Enter bank verification ID info",
+        lbl_merchant: "Merchant ID (Provided by Tingo Pay)",
+        ph_merchant: "Enter Merchant ID",
+        btn_do_link: "Proceed with Linking",
+        terms_title: "Terms of Service",
+        terms_content: 'I have read and agree that <strong class="text-slate-900 font-bold">BIDV</strong> will provide transaction notifications to <strong class="text-slate-900 font-bold">Bluecom Vietnam JSC</strong> and agree to all Terms and Conditions.',
+        terms_link: "Terms of Service.",
+        terms_agree_checkbox: "I have read and agree to all terms",
+        btn_confirm: "Confirm",
+        otp_title: "Bank Account Verification",
+        otp_sub: "Enter OTP code sent by BIDV to phone number",
+        otp_expire_prefix: "OTP expires in",
+        otp_expire_suffix: "seconds.",
+        btn_verify: "Verify",
+        menu_act: "Activate Acc",
+        menu_vqr: "My VietQR",
+        menu_balance: "Transactions",
+        menu_store: "Store Mgmt",
+        status_linked: "Linked",
+        btn_detail: "Details",
+        badge_linked_success: "SUCCESSFULLY LINKED"
+      },
+      cn: {
+        doc_title: "BIDV 银行账户绑定指引",
+        steps: [
+          "步骤 1: 添加银行账户",
+          "步骤 2: 输入绑定信息",
+          "步骤 3: 确认服务条款",
+          "步骤 4: 输入 BIDV 验证码",
+          "步骤 5: 成功绑定 BIDV"
+        ],
+        callout_pos1: "位置 1 - 点击此处",
+        callout_pos2: "位置 2",
+        callout_tick: "勾选同意",
+        callout_confirm: "点击确认",
+        callout_verify: "点击此处",
+        banner_title: "开立新企业账户",
+        banner_sub: "免费赠送多达 6 台播报音箱及营业额管理软件",
+        btn_add_bank: "添加银行账户",
+        badge_scan_sub: "以添加账户",
+        badge_scan_main: "扫描您的 VietQR 码",
+        bank_support_title: "支持的合作银行",
+        bank_support_desc: "选择银行以进行添加/绑定操作。",
+        header_link: "绑定账户",
+        btn_save_info: "保存信息",
+        lbl_bank: "合作银行",
+        lbl_acc_type: "账户类型",
+        tab_individual: "个人",
+        tab_enterprise: "企业",
+        tab_household: "个体工商户",
+        lbl_acc_num: "银行账号",
+        ph_acc_num: "请输入银行账号",
+        lbl_acc_holder: "账户户名",
+        ph_acc_holder: "请输入开户人姓名",
+        lbl_auth_phone: "认证手机号",
+        ph_auth_phone: "请输入银行预留手机号",
+        lbl_id_card: "身份证 / 税号 / 营业执照",
+        ph_id_card: "请输入银行预留身份信息",
+        lbl_merchant: "商户号 (由 Tingo Pay 提供)",
+        ph_merchant: "请输入商户号",
+        btn_do_link: "执行绑定",
+        terms_title: "服务使用条款",
+        terms_content: '我已阅读并同意 <strong class="text-slate-900 font-bold">BIDV</strong> 向 <strong class="text-slate-900 font-bold">Bluecom 越南股份公司</strong> 提供交易入账变动通知，并完全同意所有服务条款。',
+        terms_link: "服务使用条款细则。",
+        terms_agree_checkbox: "我已阅读并同意所有条款",
+        btn_confirm: "确认",
+        otp_title: "银行账户认证",
+        otp_sub: "请输入 BIDV 发送至手机的短信验证码",
+        otp_expire_prefix: "验证码将在",
+        otp_expire_suffix: "秒后失效。",
+        btn_verify: "验证",
+        menu_act: "激活账户",
+        menu_vqr: "我的二维码",
+        menu_balance: "余额变动",
+        menu_store: "门店管理",
+        status_linked: "已绑定",
+        btn_detail: "详情",
+        badge_linked_success: "绑定成功"
+      },
+      kr: {
+        doc_title: "BIDV 은행 계좌 연동 가이드",
+        steps: [
+          "1단계: 은행 계좌 추가",
+          "2단계: 연동 정보 입력",
+          "3단계: 서비스 이용약관 동의",
+          "4단계: BIDV OTP 인증번호 입력",
+          "5단계: BIDV 계좌 연동 완료"
+        ],
+        callout_pos1: "위치 1 - 여기를 누르세요",
+        callout_pos2: "위치 2",
+        callout_tick: "동의 체크",
+        callout_confirm: "확인 누르기",
+        callout_verify: "여기를 누르세요",
+        banner_title: "기업 계좌 신규 개설",
+        banner_sub: "스마트 스피커 최대 6대 및 매출 관리 앱 무료 증정",
+        btn_add_bank: "은행 계좌 추가",
+        badge_scan_sub: "계좌 추가를 위해",
+        badge_scan_main: "VietQR 코드 스캔",
+        bank_support_title: "지원 은행 안내",
+        bank_support_desc: "추가/연동할 은행을 선택하세요.",
+        header_link: "계좌 연동",
+        btn_save_info: "정보 저장",
+        lbl_bank: "은행",
+        lbl_acc_type: "계좌 유형",
+        tab_individual: "개인",
+        tab_enterprise: "기업",
+        tab_household: "개인사업자",
+        lbl_acc_num: "계좌번호",
+        ph_acc_num: "은행 계좌번호 입력",
+        lbl_acc_holder: "예금주",
+        ph_acc_holder: "예금주 성명 입력",
+        lbl_auth_phone: "인증 휴대전화",
+        ph_auth_phone: "은행 등록 전화번호 입력",
+        lbl_id_card: "신분증 / 사업자등록번호",
+        ph_id_card: "은행 등록 인증정보 입력",
+        lbl_merchant: "가맹점 ID (Tingo Pay 제공)",
+        ph_merchant: "가맹점 ID 입력",
+        btn_do_link: "연동 진행",
+        terms_title: "서비스 이용약관",
+        terms_content: '본인은 <strong class="text-slate-900 font-bold">BIDV</strong>가 본인 명의 계좌의 입금 알림을 <strong class="text-slate-900 font-bold">Bluecom Vietnam JSC</strong>에 제공하는 것에 동의하며 모든 약관에 동의합니다.',
+        terms_link: "서비스 이용약관 전문 보기.",
+        terms_agree_checkbox: "모든 약관을 확인하였으며 이에 동의합니다",
+        btn_confirm: "확인",
+        otp_title: "은행 계좌 인증",
+        otp_sub: "BIDV에서 전송된 인증번호를 입력하세요",
+        otp_expire_prefix: "인증번호 만료까지",
+        otp_expire_suffix: "초 남음.",
+        btn_verify: "인증 완료",
+        menu_act: "계좌 활성화",
+        menu_vqr: "내 VietQR",
+        menu_balance: "거래 내역",
+        menu_store: "매장 관리",
+        status_linked: "연동 완료",
+        btn_detail: "상세보기",
+        badge_linked_success: "연동 완료"
+      }
+    };
+
+    // 2. SVG FLAGS & TÊN ĐẦY ĐỦ
+    const flagSvgs = {
+      vi: '<svg class="w-full h-full" viewBox="0 0 30 20"><rect width="30" height="20" fill="#da251d"/><polygon points="15,4 17.5,12 11,7 19,7 12.5,12" fill="#ff0"/></svg>',
+      en: '<svg class="w-full h-full" viewBox="0 0 30 20"><rect width="30" height="20" fill="#012169"/><path d="M0,0 L30,20 M30,0 L0,20" stroke="#fff" stroke-width="3"/><path d="M0,0 L30,20 M30,0 L0,20" stroke="#c8102e" stroke-width="1.8"/><path d="M15,0 V20 M0,10 H30" stroke="#fff" stroke-width="5"/><path d="M15,0 V20 M0,10 H30" stroke="#c8102e" stroke-width="3"/></svg>',
+      cn: '<svg class="w-full h-full" viewBox="0 0 30 20"><rect width="30" height="20" fill="#de2910"/><polygon points="5,3 6,6 3,4 7,4 4,6" fill="#ffde00"/><polygon points="10,2 10.5,3.2 9.5,2.5 10.8,2.5 9.8,3.2" fill="#ffde00"/><polygon points="12,4 12.5,5.2 11.5,4.5 12.8,4.5 11.8,5.2" fill="#ffde00"/></svg>',
+      kr: '<svg class="w-full h-full bg-white" viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="5" fill="#cd2e3a"/><path d="M10,10 A5,5 0 0,0 20,10 A2.5,2.5 0 0,0 15,10 A2.5,2.5 0 0,1 10,10" fill="#0047a0"/></svg>'
+    };
+
+    const langNames = {
+      vi: 'Tiếng Việt',
+      en: 'English',
+      cn: '简体中文',
+      kr: '한국어'
+    };
+
+    // 3. LOGIC CUSTOM DROPDOWN POPOVER
+    function toggleLangMenu(type) {
+      const menu = document.getElementById(type === 'mobile' ? 'mobile-lang-menu' : 'desktop-lang-menu');
+      if (!menu) return;
+      const isClosed = menu.classList.contains('hidden');
+      closeAllLangMenus();
+      if (isClosed) {
+        menu.classList.remove('hidden');
+      }
+    }
+
+    function closeAllLangMenus() {
+      const mMenu = document.getElementById('mobile-lang-menu');
+      const dMenu = document.getElementById('desktop-lang-menu');
+      if (mMenu) mMenu.classList.add('hidden');
+      if (dMenu) dMenu.classList.add('hidden');
+    }
+
+    // Đóng dropdown khi click ra ngoài
+    document.addEventListener('click', (e) => {
+      const isDropdownClick = e.target.closest('#mobile-lang-trigger') || 
+                              e.target.closest('#desktop-lang-trigger') || 
+                              e.target.closest('#mobile-lang-menu') || 
+                              e.target.closest('#desktop-lang-menu');
+      if (!isDropdownClick) {
+        closeAllLangMenus();
+      }
+    });
+
+    function selectLanguage(lang) {
+      closeAllLangMenus();
+      setLanguage(lang);
+    }
+
+    // 4. HÀM THỰC THI CHUYỂN NGÔN NGỮ ĐỒNG BỘ
+    function setLanguage(lang) {
+      if (!translations[lang]) return;
+      currentLang = lang;
+      const dict = translations[lang];
+
+      // Cập nhật button trigger Desktop
+      const dFlag = document.getElementById('d-active-flag');
+      const dName = document.getElementById('d-active-name');
+      if (dFlag) dFlag.innerHTML = flagSvgs[lang];
+      if (dName) dName.innerText = langNames[lang];
+
+      // Cập nhật button trigger Mobile
+      const mFlag = document.getElementById('m-active-flag');
+      const mName = document.getElementById('m-active-name');
+      if (mFlag) mFlag.innerHTML = flagSvgs[lang];
+      if (mName) mName.innerText = langNames[lang];
+
+      // Cập nhật active class trong menu
+      document.querySelectorAll('.custom-lang-opt').forEach(opt => {
+        opt.classList.toggle('active', opt.getAttribute('data-lang') === lang);
+      });
+
+      // Cập nhật text có data-i18n
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.innerHTML = dict[key];
+        }
+      });
+
+      // Cập nhật placeholder
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        const key = el.getAttribute('data-i18n-ph');
+        if (dict[key]) {
+          el.setAttribute('placeholder', dict[key]);
+        }
+      });
+
+      // Cập nhật tiêu đề các bước Desktop
+      for (let i = 1; i <= 5; i++) {
+        const titleEl = document.querySelector(`.step-title-d-${i}`);
+        if (titleEl && dict.steps[i - 1]) {
+          titleEl.innerText = dict.steps[i - 1];
+        }
+      }
+
+      // Cập nhật tiêu đề thanh tiến trình Mobile
+      const mobStepText = document.getElementById('step-indicator-text');
+      if (mobStepText) {
+        mobStepText.innerText = dict.steps[currentStep - 1];
+      }
+    }
+
+    // Khởi tạo component
+    function initializeComponents() {
+      const statusBarHtml = document.getElementById('tpl-status-bar').innerHTML;
+      const homeBarHtml = document.getElementById('tpl-home-bar').innerHTML;
+
+      for (let i = 1; i <= 5; i++) {
+        const mContainer = document.getElementById(`m-step-${i}`);
+        if (mContainer) mContainer.innerHTML = document.getElementById(`tpl-step-${i}`).innerHTML;
+      }
+
+      for (let i = 1; i <= 5; i++) {
+        const dDevice = document.getElementById(`d-device-${i}`);
+        if (dDevice) dDevice.innerHTML = statusBarHtml + document.getElementById(`tpl-step-${i}`).innerHTML + homeBarHtml;
+      }
+
+      const mStep5Decor = document.querySelectorAll('#m-step-5 .desktop-only-decor');
+      mStep5Decor.forEach(el => el.remove());
+    }
+
+    // Điều hướng bước Mobile
+    function goToStep(step) {
+      if (step < 1 || step > totalSteps) return;
+      currentStep = step;
+
+      for (let i = 1; i <= totalSteps; i++) {
+        const el = document.getElementById(`m-step-${i}`);
+        if (el) el.classList.toggle('hidden', i !== currentStep);
+      }
+
+      const dock = document.getElementById('m-bottom-dock');
+      const fab = document.getElementById('m-fab-plus');
+      if (dock && fab) {
+        const isDockStep = (currentStep === 1 || currentStep === 5);
+        dock.classList.toggle('hidden', !isDockStep);
+        fab.classList.toggle('hidden', !isDockStep);
+      }
+
+      const progressPercent = (currentStep / totalSteps) * 100;
+      document.getElementById('progress-bar-fill').style.width = `${progressPercent}%`;
+      document.getElementById('step-indicator-text').innerText = translations[currentLang].steps[currentStep - 1];
+      document.getElementById('step-percentage-text').innerText = `${progressPercent}%`;
+
+      document.getElementById('nav-btn-prev').disabled = (currentStep === 1);
+      document.getElementById('nav-btn-next').disabled = (currentStep === totalSteps);
+
+      const currentSection = document.getElementById(`m-step-${currentStep}`);
+      if (currentSection) {
+        const mainEl = currentSection.querySelector('main');
+        if (mainEl) mainEl.scrollTop = 0;
+      }
+    }
+
+    function navigateStep(direction) {
+      goToStep(currentStep + direction);
+    }
+
+    // Xử lý vuốt trên Mobile
+    let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
+    const gestureZone = document.getElementById('screen-stage');
+
+    gestureZone.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    gestureZone.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 45) {
+        if (deltaX < 0 && currentStep < totalSteps) navigateStep(1);
+        else if (deltaX > 0 && currentStep > 1) navigateStep(-1);
+      }
+    }, { passive: true });
+
+    // Dữ liệu giả định an toàn
+    const dummyData = {
+      canhan: { stk: '868xxxxxxx', chutaikhoan: 'NGUYEN VAN A', sdt: '0912xxxxxx', dinhdanh: '001095012345' },
+      doanhnghiep: { stk: '868xxxxxxx', chutaikhoan: 'CONG TY CP CONG NGHE V-SOLUTION', sdt: '0912xxxxxx', dinhdanh: '0108999888', merchantId: 'Vui lòng liên hệ Tingo Pay' },
+      hokinhdoanh: { stk: '868xxxxxxx', chutaikhoan: 'HO KINH DOANH PHO NGON TAM HOA', sdt: '0912xxxxxx', dinhdanh: '001080099887' }
+    };
+
+    function selectAccountType(type) {
+      document.querySelectorAll('.tab-canhan').forEach(b => b.classList.toggle('active', type === 'canhan'));
+      document.querySelectorAll('.tab-doanhnghiep').forEach(b => b.classList.toggle('active', type === 'doanhnghiep'));
+      document.querySelectorAll('.tab-hokinhdoanh').forEach(b => b.classList.toggle('active', type === 'hokinhdoanh'));
+
+      const data = dummyData[type];
+      document.querySelectorAll('.input-stk').forEach(i => i.value = data.stk);
+      document.querySelectorAll('.input-chutaikhoan').forEach(i => i.value = data.chutaikhoan);
+      document.querySelectorAll('.input-sdt').forEach(i => i.value = data.sdt);
+      document.querySelectorAll('.input-dinhdanh').forEach(i => i.value = data.dinhdanh);
+
+      document.querySelectorAll('.field-merchant').forEach(f => {
+        f.classList.toggle('hidden', type !== 'doanhnghiep');
+        if (type === 'doanhnghiep') {
+          f.querySelector('input').value = data.merchantId;
+        }
+      });
+    }
+
+    let isAgreed = true;
+    function toggleAgreeCheckbox() {
+      isAgreed = !isAgreed;
+      document.querySelectorAll('.check-icon').forEach(icon => {
+        if (isAgreed) {
+          icon.className = "check-icon w-5 h-5 rounded-full bg-[#007aff] flex items-center justify-center text-white text-[11px] shadow-2xs";
+          icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+        } else {
+          icon.className = "check-icon w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center text-transparent text-[11px]";
+          icon.innerHTML = '';
+        }
+      });
+      document.querySelectorAll('.btn-confirm').forEach(btn => {
+        btn.classList.toggle('opacity-50', !isAgreed);
+        btn.classList.toggle('pointer-events-none', !isAgreed);
+      });
+    }
+
+    // Tự động phát hiện thiết bị và scale màn hình tối ưu
+    function handleDeviceDetectionAndScale() {
+      const screenW = window.innerWidth;
+      const screenH = window.innerHeight;
+      isDesktopMode = (screenW >= 1024);
+
+      const mobileRoot = document.getElementById('mobile-view-root');
+      const desktopRoot = document.getElementById('desktop-view-root');
+
+      if (isDesktopMode) {
+        mobileRoot.style.display = 'none';
+        desktopRoot.style.display = 'flex';
+        desktopRoot.style.flexDirection = 'column';
+
+        const headerBar = document.getElementById('desktop-header-bar');
+        const canvas = document.getElementById('desktop-canvas');
+
+        // Khung chuẩn desktop rộng 2400px x cao 1030px (bao gồm nhãn to rõ)
+        const baseCanvasWidth = 2400;
+        const baseCanvasHeight = 1030;
+
+        const availableW = screenW - 40;
+        const availableH = screenH - headerBar.offsetHeight - 24;
+
+        const scaleX = availableW / baseCanvasWidth;
+        const scaleY = availableH / baseCanvasHeight;
+        const scale = Math.min(scaleX, scaleY);
+
+        canvas.style.transform = `scale(${scale})`;
+        const renderedHeight = baseCanvasHeight * scale;
+        const topOffset = Math.max(10, (availableH - renderedHeight) / 2);
+        canvas.style.top = topOffset + 'px';
+
+      } else {
+        desktopRoot.style.display = 'none';
+        mobileRoot.style.display = 'flex';
+
+        const controlBar = document.getElementById('mobile-control-bar');
+        const fit = document.getElementById('screen-fit');
+        const stage = document.getElementById('screen-stage');
+
+        const baseWidth = 430;
+        const baseHeight = 900;
+
+        const availableWidth = screenW - 12;
+        const availableHeight = screenH - controlBar.offsetHeight - 18;
+
+        const scaleX = availableWidth / baseWidth;
+        const scaleY = availableHeight / baseHeight;
+        const scale = Math.min(scaleX, scaleY, 1);
+
+        stage.style.transform = `scale(${scale})`;
+        fit.style.height = (baseHeight * scale) + 'px';
+      }
+    }
+
+    window.addEventListener('resize', handleDeviceDetectionAndScale);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(handleDeviceDetectionAndScale, 150);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initializeComponents();
+      handleDeviceDetectionAndScale();
+      goToStep(1);
+      setLanguage('vi');
+    });
+  </script>
+
+</body>
+</html>
